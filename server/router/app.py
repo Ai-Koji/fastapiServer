@@ -60,7 +60,4 @@ def getCommand(device_id:int, request: Request):
     if current_device:
         return current_device.get_command()
     else:
-        return {"error": "undefined"}
-    # if not len(current_device) >=1:
-    #     return {"error": "device is not found"}
-    # return current_device[0].command
+        return {"error": "device is not found"}
