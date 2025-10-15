@@ -3,7 +3,7 @@ from fastapi.responses import StreamingResponse
 import os
 from globals import config
 
-appRouter = APIRouter(prefix="/app")
+appRouter = APIRouter(prefix="/device/app")
 
 
 # download the main file

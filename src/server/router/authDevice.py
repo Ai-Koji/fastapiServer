@@ -9,7 +9,7 @@ from globals import *
 import random
 import string
 
-authRouter = APIRouter(prefix="/auth")
+authRouter = APIRouter(prefix="/device/auth")
 
 # TODO: add clean sessoinId from DB by time
 
@@ -22,8 +22,8 @@ def generate_password(length=12):
 @authRouter.get("/register")
 def register(request: Request):
     # generate userID, password
-    if len(deviceSessions.keys()) > 0:
-        device_id = max(deviceSessions.keys()) +1
+    if len(devices.keys()) > 0:
+        device_id = max(devices.keys()) +1
     else:
         device_id = 1
 
@@ -39,9 +39,11 @@ def register(request: Request):
         session_id = str(session_uuid)
 
     # save info to db and json
-    deviceSessions[device_id] = {
-        "id": device_id, 
-        "password": password, 
+    devices[device_id] = {
+        "account": {
+            "id": device_id, 
+            "password": password, 
+        },
         "sessionID": session_id,
         "sessionIDDate": time.time()
         }
@@ -54,7 +56,7 @@ def register(request: Request):
 @authRouter.post("/startSession")
 async def login(device: DeviceAuth):
     # check data:
-    if not device.device_id in list(deviceSessions.keys()) or deviceSessions[device.device_id]["password"] != device.password:
+    if not device.device_id in list(devices.keys()) or devices[device.device_id]["account"]["password"] != device.password:
         return Response(status_code=403)
 
     # generate sessionID
@@ -66,7 +68,7 @@ async def login(device: DeviceAuth):
     else:
         session_id = str(session_uuid)
         
-    deviceSessions[device.device_id]["sessionID"] = session_id
-    deviceSessions[device.device_id]["sessionIDDate"] = time.time()
+    devices[device.device_id]["sessionID"] = session_id
+    devices[device.device_id]["sessionIDDate"] = time.time()
 
     return {"session_id": session_id}
