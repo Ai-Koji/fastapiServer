@@ -1,12 +1,7 @@
 from fastapi import FastAPI
-from router.app import mainRouter
+from router.appDevice import appRouter
+from router.authDevice import authRouter
 
 app = FastAPI()
-app.include_router(mainRouter) 
-
-value = {"hello"}
-
-app.state.shared_config = {
-    "devices":[]
-}
-
+app.include_router(appRouter) 
+app.include_router(authRouter) 
