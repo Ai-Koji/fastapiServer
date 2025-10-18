@@ -15,9 +15,24 @@ config = {
         # {
             #  "type": "stop",
             #  "ProcessId": 123
-        # }
-    # ]
+        # } 
+    # ] 
     # "sessionID": session_id,
     # "sessionIDDate": time.time()
 # }}
 devices = {}
+
+# {
+    # "login": {
+        # "password",
+        # "sessionId",
+        # "sessionIDDate"
+    # }
+# }
+_clients = {
+    "admin": {
+        "password": "admin",
+        "sessionId": ""
+    }
+}
+

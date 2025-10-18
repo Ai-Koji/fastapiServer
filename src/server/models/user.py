@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
-class DeviceAuth(BaseModel):
-    device_id: int
+class UserAuth(BaseModel):
+    login: str
     password: str
