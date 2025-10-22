@@ -18,6 +18,12 @@ def generate_password(length=12):
     password = ''.join(random.choice(characters) for _ in range(length))
     return password
 
+def find_device_by_session_id(session_id):
+    for device_id, device_data in devices.items():
+        if device_data["sessionID"] == session_id:
+            return device_id, device_data
+    return None, None
+
 # Contain list of registered devices
 @authRouter.get("/register")
 def register(request: Request):

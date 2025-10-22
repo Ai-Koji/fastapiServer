@@ -7,7 +7,7 @@ import hashlib
 from models.user import UserAuth
 from globals import *
 
-authClientRouter = APIRouter(prefix=" /client/auth")
+authClientRouter = APIRouter(prefix="/client/auth")
 
 # TODO: add clean sessoinId from DB by time
 # TODO: add sha256
