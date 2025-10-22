@@ -27,6 +27,10 @@ def getCommands(request: Request):
             status_code=403,
             detail="Forbidden"
         )
+    
+    copyCommands = device_data["commands"]
 
-    return  device_data["commands"]
+    # delete after each call
+    device_data["commands"] = []
 
+    return  copyCommands
