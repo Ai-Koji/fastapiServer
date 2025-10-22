@@ -22,13 +22,37 @@ def getCommands(request: Request):
             status_code=403,
             detail="Forbidden"
         )
-    
+
     copyCommands = device_data["commands"]
 
     # delete after each call
     device_data["commands"] = []
 
     return  copyCommands
+
+
+@processRouter.get("/getCommandsClient")
+def getCommandsClient(request: Request):
+    sessionID = request.headers.get("Authorization")
+
+    user_login, user_data = find_user_by_session_id(sessionID)
+
+    if user_login is None:
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden"
+        )
+
+    data = request.query_params
+    device_id = data.get("device_id")
+
+    if device_id not in devices:
+        raise HTTPException(
+            status_code=404,
+            detail="Device not found"
+        )
+
+    return devices[device_id]["commands"]
 
 
 # adding command to device
