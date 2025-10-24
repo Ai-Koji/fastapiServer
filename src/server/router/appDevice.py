@@ -9,7 +9,7 @@ appRouter = APIRouter(prefix="/device/app")
 # download the main file
 @appRouter.get("/download")
 def download_large_file():
-    file_path = "uploads/file.exe"
+    file_path = "uploads/program.exe"
     
     def file_iterator():
         with open(file_path, mode="rb") as file:
