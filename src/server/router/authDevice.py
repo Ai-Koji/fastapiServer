@@ -19,10 +19,14 @@ def generate_password(length=12):
     return password
 
 def find_device_by_session_id(session_id):
-    for device_id, device_data in devices.items():
-        if device_data["sessionID"] == session_id:
-            return device_id, device_data
+    for deviceId in devices.keys():
+        device = devices[deviceId]
+        if device["sessionID"] == session_id:
+            return deviceId, device
     return None, None
+
+def clean_device_command(device_id):
+    devices[device_id]["commands"] = []
 
 # Contain list of registered devices
 @authRouter.get("/register")
@@ -47,11 +51,12 @@ def register(request: Request):
     # save info to db and json
     devices[device_id] = {
         "account": {
-            "id": device_id, 
-            "password": password, 
+            "id": device_id,
+            "password": password,
         },
         "sessionID": session_id,
-        "sessionIDDate": time.time()
+        "sessionIDDate": time.time(),
+        "commands": []
         }
 
     # TODO: save to db

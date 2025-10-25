@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Response, HTTPException
+from fastapi import APIRouter, Request, Response, HTTPException, status
 from fastapi.responses import StreamingResponse
 import time
 import uuid
@@ -7,7 +7,7 @@ import hashlib
 from models.device import DeviceAuth
 from globals import *
 from router.authClient import find_user_by_session_id
-from router.authDevice import find_device_by_session_id
+from router.authDevice import find_device_by_session_id, clean_device_command
 
 processRouter = APIRouter(prefix="/device/process")
 
@@ -17,18 +17,19 @@ def getCommands(request: Request):
 
     device_id, device_data = find_device_by_session_id(sessionID)
 
-    if device_id == None:
-        return HTTPException(
-            status_code=403,
+    if device_id == None or device_data == None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Forbidden"
         )
 
-    copyCommands = device_data["commands"]
+    if (len(device_data["commands"])):
+        copyData = device_data["commands"]
+    else:
+        copyData = []
 
-    # delete after each call
-    device_data["commands"] = []
-
-    return  copyCommands
+    clean_device_command(device_id)
+    return  copyData
 
 
 @processRouter.get("/getCommandsClient")
