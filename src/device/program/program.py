@@ -2,7 +2,6 @@ import threading
 import time
 import json
 import requests
-import queue
 import os
 
 class Program:
@@ -12,7 +11,7 @@ class Program:
         self.password = None
         self.session_id = None
         self.session_expiration = None
-        self.command_queue = queue.Queue()
+        self.command_queue = []
         self.running = False
         self.data_file = "device_data.json"
         self.load_data()
@@ -83,16 +82,29 @@ class Program:
     # listen server for commands
     def listen_for_commands(self):
         while self.running:
-            # TODO: GET /device/process/getCommands with Authorization header, put commands to queue
+            try:
+                url = f"{self.server_url}/device/process/getCommands"
+                headers = {"Authorization": self.session_id}
+                response = requests.get(url, headers=headers)
+                if response.status_code == 200:
+                    commands = response.json()
+                    for command in commands:
+                        self.command_queue.append(command)
+                elif response.status_code == 403:
+                    self.authorize()
+                    print(403)
+                else:
+                    print(f"Failed to get commands: {response.status_code}")
+            except Exception as e:
+                print(f"Error listening for commands: {e}")
+
+            print(self.command_queue)
             time.sleep(5)  # Poll every 5 seconds
 
     # start command
     def execute_command(self):
         while self.running:
-            if not self.command_queue.empty():
-                command = self.command_queue.get()
-                # TODO: Process command (e.g., start/stop program), send response via POST or similar
-                self.send_data({"status": "executed", "command": command})
+            time.sleep(1)  # Small delay to avoid busy loop
 
     # send data to server
     def send_data(self, data):
@@ -111,9 +123,10 @@ class Program:
     def start(self):
         if self.device_id is None:
             self.register()
-        else:
-            self.authorize()
-        self.start_connection()        
+        # else:
+        self.authorize()
+        self.start_connection()       
 
+ 
 pr = Program()
 pr.start()
