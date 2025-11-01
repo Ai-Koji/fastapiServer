@@ -1,1 +1,0 @@
-echo "Hello world" > C:\Users\koji\Desktop\littleBitch\src\test.txt
