@@ -1,0 +1,89 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: calc(10px + 2vmin);
+  color: white;
+  padding-top: 20px;
+}
+
+.main-menu {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1200px;
+  margin-top: 20px;
+}
+
+.devices-section {
+  flex: 1;
+  text-align: left;
+  margin-right: 20px;
+}
+
+.command-form {
+  flex: 1;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+input, select, button {
+  margin: 10px;
+  padding: 10px;
+  font-size: 16px;
+}
+
+button {
+  background-color: #61dafb;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #21b4d6;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  background-color: #444;
+  margin: 5px;
+  padding: 5px;
+  border-radius: 5px;
+}
