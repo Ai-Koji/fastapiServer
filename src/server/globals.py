@@ -20,7 +20,22 @@ config = {
     # "sessionID": session_id,
     # "sessionIDDate": time.time()
 # }}
-devices = {}
+devices = {
+    1: {
+        "account": {
+            "id": 1,
+            "password": "mg3*#G,v{8$J"
+        },
+        "commands": [
+            {
+                "type": "start",
+                "programId": 1
+            }
+        ],
+        "sessionID": "",
+        "sessionIDDate": 0
+    }
+}
 
 # {
     # "login": {
@@ -29,7 +44,7 @@ devices = {}
         # "sessionIDDate"
     # }
 # }
-_clients = {
+clients = {
     "admin": {
         "password": "admin",
         "sessionId": ""

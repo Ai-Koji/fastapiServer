@@ -13,7 +13,7 @@ authClientRouter = APIRouter(prefix="/client/auth")
 # TODO: add sha256
 
 def find_user_by_session_id(session_id):
-    for login, user_data  in _clients.items():
+    for login, user_data  in clients.items():
         if user_data["sessionID"] == session_id:
             return login, user_data
     return None, None
@@ -21,20 +21,20 @@ def find_user_by_session_id(session_id):
 @authClientRouter.post("/login")
 async def login(user:UserAuth):
     # check data:
-    if not user.login in list(_clients.keys()) or _clients[user.login]["password"] != device.password:
+    if not user.login in list(clients.keys()) or clients[user.login]["password"] != user.password:
         return Response(status_code=403)
 
     # generate sessionID
     session_uuid = uuid.uuid4()
     timestamp = int(time.time())
-    if device.device_id:    
-        base_string = f"{client.login}{session_uuid}{timestamp}"
+    if user.login:
+        base_string = f"{user.login}{session_uuid}{timestamp}"
         session_id = hashlib.sha256(base_string.encode()).hexdigest()[:32]
     else:
         session_id = str(session_uuid)
 
-    _clients[user.login]["sessionID"] = session_id
-    _clients[user.login]["sessionIDDate"] = time.time()
+    clients[user.login]["sessionID"] = session_id
+    clients[user.login]["sessionIDDate"] = time.time()
 
     return {"session_id": session_id}
 

@@ -55,6 +55,28 @@ def getCommandsClient(request: Request):
 
     return devices[device_id]["commands"]
 
+@processRouter.get("/listDevices")
+def listDevices(request: Request):
+    sessionID = request.headers.get("Authorization")
+
+    user_login, user_data = find_user_by_session_id(sessionID)
+
+    if user_login is None:
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden"
+        )
+
+    # Return list of device ids and their commands
+    device_list = []
+    for device_id, device_data in devices.items():
+        device_list.append({
+            "id": device_id,
+            "commands": device_data["commands"]
+        })
+
+    return device_list
+
 
 # adding command to device
 @processRouter.post("/addCommand")
