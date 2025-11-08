@@ -13,6 +13,7 @@ function App() {
   const [command, setCommand] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // authtorization
   const handleLogin = async () => {
     try {
       const response = await axios.post(`${API_BASE_URL}/client/auth/login`, {
@@ -21,12 +22,12 @@ function App() {
       });
       setSessionId(response.data.session_id);
       setIsLoggedIn(true);
-      alert('Logged in successfully');
     } catch (error) {
       alert('Login failed: ' + error.response?.data?.detail || error.message);
     }
   };
 
+  // get devices info
   const fetchDevices = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/device/process/listDevices`, {
@@ -38,6 +39,7 @@ function App() {
     }
   };
 
+  // add comand
   const addCommand = async () => {
     if (!selectedDevice || !command) {
       alert('Please select a device and enter a command');
@@ -56,20 +58,9 @@ function App() {
       alert('Failed to add command: ' + error.response?.data?.detail || error.message);
     }
   };
-
-  const logout = () => {
-    setSessionId('');
-    setIsLoggedIn(false);
-    setDevices([]);
-    setLogin('');
-    setPassword('');
-  };
-
-  return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Device Management Client</h1>
-        {!isLoggedIn ? (
+  
+  const loginPage = () => {
+    return (
           <div>
             <input
               type="text"
@@ -85,7 +76,46 @@ function App() {
             />
             <button onClick={handleLogin}>Login</button>
           </div>
-        ) : (
+    )
+  }
+
+  const startProcessForm = () => {
+    return (
+      <div>
+        {/* Add select program */}
+        <input
+          type="text"
+          placeholder='Command (e.g. {"type": "start", "programId": 1})'
+          value={command}
+          onChange={(e) => setCommand(e.target.value)}/>
+        <button onClick={addCommand}>start process</button>
+      </div>
+    )
+  }
+  const stopProcessForm = () => {
+    return (
+      <div>
+        {/* TODO */}
+      </div>
+    )
+  }
+  const showProcessOutput = () => {
+    return (
+      <div>
+        {/* TODO */}
+      </div>
+    )
+  }
+  const showProcesses = () => {
+    return (
+      <div>
+        {/* TODO */}
+      </div>
+    )
+  }
+
+  const commandPage = () => {
+    return (
           <div className="main-menu">
             <section className="devices-section">
               <button onClick={fetchDevices}>Reload</button>
@@ -102,22 +132,30 @@ function App() {
               ))}
             </section>
             <section className="command-form">
+              <div className="actionType">
+
+              </div>
               <select value={selectedDevice} onChange={(e) => setSelectedDevice(e.target.value)}>
                 <option value="">Select Device</option>
                 {devices.map(device => (
                   <option key={device.id} value={device.id}>Device {device.id}</option>
                 ))}
               </select>
-              <input
-                type="text"
-                placeholder='Command (e.g. {"type": "start", "programId": 1})'
-                value={command}
-                onChange={(e) => setCommand(e.target.value)}
-              />
-              <button onClick={addCommand}>Add Command</button>
+
+              {/* TODO: good form right here */}
+              {
+                startProcessForm()
+              }
             </section>
           </div>
-        )}
+        )
+  }
+
+  return (
+    <div className="App">
+      <header className="App-header">
+        <h1>Device Management Client</h1>
+        {!isLoggedIn ? (loginPage()) : (commandPage())}
       </header>
     </div>
   );
