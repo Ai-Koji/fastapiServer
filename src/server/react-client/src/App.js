@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import './App.css';
+import './css/App.css';
 
 const API_BASE_URL = 'http://localhost:7070'; // Adjust if server runs on different port
 
