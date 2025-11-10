@@ -105,3 +105,37 @@ async def addCommand(request: Request):
 
     return {"status": "Command added successfully"}
 
+
+# adding command to device
+@processRouter.post("/addProcessInfo")
+def addCommand(request: Request):
+    sessionID = request.headers.get("Authorization")
+
+    device_id, device_data = find_device_by_session_id(sessionID)
+
+    if device_id == None or device_data == None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden"
+        )
+
+    # getting json data and save
+    data = await request.json()
+
+    devices[device_id]["processInfo"].append(data)
+
+    return {"status": "Command processResult saved successfully"}
+
+# info endpoint
+@processRouter.get("/programInfo")
+def programs(request: Request):
+    sessionID = request.headers.get("Authorization")
+
+    user_login, user_data = find_user_by_session_id(sessionID)
+    if user_login is None:
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden"
+        )
+
+    return programInfo

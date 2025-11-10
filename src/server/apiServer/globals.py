@@ -2,36 +2,33 @@ config = {
     "version": "0.0.0"
     }
 
-# {device_id: {
-    # account: {
-        # id: id
-        # password: password
-    # },
-    # commands: [
-        # {
-            #  "type": "start",
-            #  "programId": 1 
-        # },
-        # {
-            #  "type": "stop",
-            #  "ProcessId": 123
-        # } 
-    # ] 
-    # "sessionID": session_id,
-    # "sessionIDDate": time.time()
 # }}
 devices = {
-    1: {
-        "account": {
+    ### example device ###
+    0: { # device_id
+        "account": { ### device auth info
             "id": 1,
             "password": "mg3*#G,v{8$J"
         },
-        "commands": [
+        "commands": [ ### commands to start when it get it
             {
-                "type": "start",
+                "type": "start", #
+                "programId": 1,
+                "configuration": {
+                    # ...
+                }
+            },
+            {
+                "type": "stop", #
                 "programId": 1
             }
         ],
+        "processInfo": [ ### info of some started processes
+            1: { # processId
+                "programId": 1,
+                "out": "" # what process output
+            }            
+        ]
         "sessionID": "",
         "sessionIDDate": 0
     }
@@ -51,3 +48,20 @@ clients = {
     }
 }
 
+programInfo = {
+    # id: {
+    #     "name": "backd",
+    #     "configurationForm": [ # data in form that needs to input
+            # 1: {
+            #     "name": "host"
+            #     "infotype": "int"
+            # }
+    #     ]
+    # }
+    1: {
+        "name": "back",
+        "configurationForm": [ # data in form that needs to input
+            # TODO: add form here
+        ]
+    }
+}
