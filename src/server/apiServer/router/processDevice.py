@@ -67,15 +67,7 @@ def listDevices(request: Request):
             detail="Forbidden"
         )
 
-    # Return list of device ids and their commands
-    device_list = []
-    for device_id, device_data in devices.items():
-        device_list.append({
-            "id": device_id,
-            "commands": device_data["commands"]
-        })
-
-    return device_list
+    return devices
 
 
 # adding command to device
