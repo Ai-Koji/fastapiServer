@@ -8,19 +8,21 @@ class Program:
     def __init__(self, server_url="http://localhost:8000"):
         self.server_url = server_url
 
+        # auth settings
         self.device_id = None
         self.password = None
         self.session_id = None
         self.session_expiration = None # relevant id date
-        
-        self.command_queue = [] # commands
-
-        self.running = False # stop threads command
-
-        self.running_processes = []
 
         self.config_filename = "device_data.json" # file with settings
         self.load_config() # if this file is exists it load it
+
+        #program data
+        self.running = False # stop threads command
+
+        # data for thread works
+        self.running_processes = []
+        self.command_queue = [] # commands
 
     # load data from json
     def load_config(self):
@@ -114,10 +116,22 @@ class Program:
     # start command
     def execute_command(self):
         while self.running:
+            if self.command_queue:
+                command = self.command_queue.pop(0)
+                if 'module' in command:
+                    try:
+                        module_name = f"modules.{command['module']}"
+                        module = __import__(module_name, fromlist=[command['module']])
+                        process_thread = threading.Thread(target=module.run)
+                        process_thread.start()
+                        self.running_processes.append(process_thread)
+                    except Exception as e:
+                        print(f"Error executing module {command['module']}: {e}")
             time.sleep(1)  # Small delay to avoid busy loop
 
     # send data to server
     def send_data(self, data):
+        
         # TODO: POST data to some endpoint with Authorization
         pass
 
@@ -125,9 +139,10 @@ class Program:
     def start_connection(self):
         self.running = True
         listener_thread = threading.Thread(target=self.listen_for_commands)
-        executor_thread = threading.Thread(target=self.execute_command)
+        # executor_thread = threading.Thread(target=self.execute_command)
         listener_thread.start()
-        executor_thread.start()
+        # executor_thread.start()
+        # TODO: send_data thread
 
     # main function for start
     def start(self):
@@ -136,7 +151,6 @@ class Program:
         # else:
         self.authorize()
         self.start_connection()       
-
  
 pr = Program()
 pr.start()

@@ -112,13 +112,13 @@ def addCommand(request: Request):
         )
 
     # getting json data and save
-    data = await request.json()
+    data = request.json()
 
-    devices[device_id]["processInfo"].append(data)
+    devices[device_id]["processInfo"][data["processId"]] = data
 
     return {"status": "Command processResult saved successfully"}
 
-# info endpoint
+# info about all scripts of program
 @processRouter.get("/programInfo")
 def programs(request: Request):
     sessionID = request.headers.get("Authorization")
