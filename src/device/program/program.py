@@ -3,8 +3,13 @@ import time
 import json
 import requests
 import os
+from modules.door import Door
 
 class Program:
+    program_list = {
+        1: Door
+    }
+
     def __init__(self, server_url="http://localhost:8000"):
         self.server_url = server_url
 
@@ -50,6 +55,18 @@ class Program:
                 json.dump(data, f)
         except Exception as e:
             print(f"Error saving data: {e}")
+
+    def find_process_by_id(self, id):
+        for process in self.running_processes:
+            if process.id == id:
+                return process
+
+    def max_process_id(self):
+        maxId = 0
+        for process in self.running_processes:
+            if maxId < process.id:
+                maxId = process.id
+        return maxId
 
     #############################################
 
@@ -111,7 +128,7 @@ class Program:
             except Exception as e:
                 print(f"Error listening for commands: {e}")
 
-
+            print(f"commands: {self.command_queue}")
             
             # TODO: delete
             temp = input("")
@@ -119,21 +136,42 @@ class Program:
                 self.running = False 
             # time.sleep(5)  # Poll every 5 seconds
 
+    def stop_all_processes(self):
+        print("stopping all processes")
+        for process in self.running_processes:
+            process.stop()
+
     # start command
     def execute_command(self):
         while self.running:
             if self.command_queue:
                 command = self.command_queue.pop(0)
-                if 'module' in command:
+                print("start executing command:")
+                print(command)
+            
+                # Start command
+                if command["type"] == "start":
+                    print("start command")
                     try:
-                        module_name = f"modules.{command['module']}"
-                        module = __import__(module_name, fromlist=[command['module']])
-                        process_thread = threading.Thread(target=module.run)
-                        process_thread.start()
-                        self.running_processes.append(process_thread)
+                        if command["programId"] in self.program_list.keys():
+                            process_thread = self.program_list[command["programId"]](self.max_process_id()+1)
+                            process_thread.start()
+                            self.running_processes.append(process_thread)
                     except Exception as e:
-                        print(f"Error executing module {command['module']}: {e}")
+                        print(f"error:{e}")
+
+                # Stop command
+                elif command["type"] == "stop":
+                    print("stop command")
+                    try:
+                        self.find_process_by_id(command["processId"]).stop()
+                    except Exception as ex:
+                        print(f"not found: {ex}")
+                
+                # TODO: add DELETE PROGRAM
             time.sleep(1)  # Small delay to avoid busy loop
+        self.stop_all_processes()
+
 
     # send data to server
     def send_data(self, data):
@@ -145,9 +183,9 @@ class Program:
     def start_connection(self):
         self.running = True
         listener_thread = threading.Thread(target=self.listen_for_commands)
-        # executor_thread = threading.Thread(target=self.execute_command)
+        executor_thread = threading.Thread(target=self.execute_command)
         listener_thread.start()
-        # executor_thread.start()
+        executor_thread.start()
         # TODO: send_data thread
 
     # main function for start
