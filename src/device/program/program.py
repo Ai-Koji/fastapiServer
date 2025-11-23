@@ -73,26 +73,27 @@ class Program:
 
     # auth if session id is relevant
     def authorize(self):
-        if self.session_expiration is None or time.time() > self.session_expiration:
-            try:
-                url = f"{self.server_url}/device/auth/startSession"
-                payload = {"device_id": self.device_id, "password": self.password}
-                response = requests.post(url, json=payload)
-                if response.status_code == 200:
-                    data = response.json()
-                    self.session_id = data["session_id"]
-                    self.session_expiration = time.time() + 3600  # Assume 1 hour expiration
-                    self.save_config()
-                    print(f"Re-authorized: new session_id {self.session_id}")
-                else:
-                    print(f"Authorization failed: {response.status_code}")
-            except Exception as e:
-                print(f"Error during authorization: {e}")
+        print("start")
+        try:
+            url = f"{self.server_url}/device/auth/startSession"
+            payload = {"device_id": self.device_id, "password": self.password}
+            response = requests.post(url, json=payload)
+            if response.status_code == 200:
+                data = response.json()
+                self.session_id = data["session_id"]
+                self.session_expiration = time.time() + 3600  # Assume 1 hour expiration
+                self.save_config()
+                print(f"Re-authorized: new session_id {self.session_id}")
+            else:
+                print(f"Authorization failed: {response.status_code}")
+        except Exception as e:
+            print(f"Error during authorization: {e}")
 
     #############################################
 
     # listen server for commands
     def listen_for_commands(self):
+        print("start listening")
         while self.running:
             try:
                 url = f"{self.server_url}/device/process/getCommands"
@@ -110,8 +111,13 @@ class Program:
             except Exception as e:
                 print(f"Error listening for commands: {e}")
 
-            print(self.command_queue)
-            time.sleep(5)  # Poll every 5 seconds
+
+            
+            # TODO: delete
+            temp = input("")
+            if temp:
+                self.running = False 
+            # time.sleep(5)  # Poll every 5 seconds
 
     # start command
     def execute_command(self):
@@ -148,9 +154,10 @@ class Program:
     def start(self):
         if self.device_id is None:
             self.register()
-        # else:
-        self.authorize()
-        self.start_connection()       
- 
-pr = Program()
+        else:
+            self.authorize()
+        self.start_connection()
+
+
+pr = Program("http://127.0.0.1:8000")
 pr.start()
