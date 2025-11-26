@@ -133,11 +133,7 @@ class Program:
 
             print(f"commands: {self.command_queue}")
             
-            # TODO: delete
-            temp = input("")
-            if temp:
-                self.running = False 
-            # time.sleep(5)  # Poll every 5 seconds
+            time.sleep(5)  # Poll every 5 seconds
 
     def stop_all_processes(self):
         print("stopping all processes")
