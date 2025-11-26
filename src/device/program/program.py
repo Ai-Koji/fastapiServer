@@ -4,6 +4,7 @@ import json
 import requests
 import os
 from modules.door import Door
+from time import sleep
 
 class Program:
     program_list = {
@@ -24,6 +25,7 @@ class Program:
 
         #program data
         self.running = False # stop threads command
+        self.need_auth = True
 
         # data for thread works
         self.running_processes = []
@@ -90,28 +92,30 @@ class Program:
 
     # auth if session id is relevant
     def authorize(self):
-        print("start")
-        try:
-            url = f"{self.server_url}/device/auth/startSession"
-            payload = {"device_id": self.device_id, "password": self.password}
-            response = requests.post(url, json=payload)
-            if response.status_code == 200:
-                data = response.json()
-                self.session_id = data["session_id"]
-                self.session_expiration = time.time() + 3600  # Assume 1 hour expiration
-                self.save_config()
-                print(f"Re-authorized: new session_id {self.session_id}")
-            else:
-                print(f"Authorization failed: {response.status_code}")
-        except Exception as e:
-            print(f"Error during authorization: {e}")
+        while self.need_auth:
+            print("authorization")
+            try:
+                url = f"{self.server_url}/device/auth/startSession"
+                payload = {"device_id": self.device_id, "password": self.password}
+                response = requests.post(url, json=payload)
+                if response.status_code == 200:
+                    data = response.json()
+                    self.session_id = data["session_id"]
+                    self.session_expiration = time.time() + 3600  # Assume 1 hour expiration
+                    self.save_config()
+                    self.need_auth = False
+                    print(f"Re-authorized: new session_id {self.session_id}")
+                else:
+                    print(f"Authorization failed: {response.status_code}")
+            except Exception as e:
+                print(f"Error during authorization: {e}")
 
     #############################################
 
     # listen server for commands
     def listen_for_commands(self):
         print("start listening")
-        while self.running:
+        while self.running and not self.need_auth:
             try:
                 url = f"{self.server_url}/device/process/getCommands"
                 headers = {"Authorization": self.session_id}
@@ -121,8 +125,7 @@ class Program:
                     for command in commands:
                         self.command_queue.append(command)
                 elif response.status_code == 403:
-                    self.authorize()
-                    print(403)
+                    self.need_auth = True
                 else:
                     print(f"Failed to get commands: {response.status_code}")
             except Exception as e:
@@ -176,7 +179,7 @@ class Program:
     # send data to server
     def send_data(self):
         print("start sending data")
-        while self.running:
+        while self.running and not self.need_auth:
             if self.running_processes:
                 for process in self.running_processes:        
                     print(f"sending data about process {process.id}")
@@ -191,20 +194,26 @@ class Program:
                     ]
                     try:
                         response = requests.post(url, json=data, headers=headers)
-                        if response.status_code != 200:
+                        if response.status_code == 403:
+                            self.need_auth = True
+                        elif response.status_code != 200:
                             print(f"Failed to send data for process {process.id}: {response.status_code}")
                     except Exception as e:
                         print(f"Exception sending data for process {process.id}: {e}")
             time.sleep(5)  # Small delay to avoid busy loop
+        print("end of send_data thread")
 
     #############################################
 
     # start threads for program
     def start_connection(self):
         self.running = True
+        authorize_thread = threading.Thread(target=self.authorize)
         listener_thread = threading.Thread(target=self.listen_for_commands)
         executor_thread = threading.Thread(target=self.execute_command)
         send_data_thread = threading.Thread(target=self.send_data)
+        authorize_thread.start()
+        sleep(1)
         listener_thread.start()
         executor_thread.start()
         send_data_thread.start()
@@ -213,8 +222,6 @@ class Program:
     def start(self):
         if self.device_id is None:
             self.register()
-        else:
-            self.authorize()
         self.start_connection()
 
 
