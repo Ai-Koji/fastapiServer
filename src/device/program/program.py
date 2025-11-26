@@ -154,7 +154,7 @@ class Program:
                     print("start command")
                     try:
                         if command["programId"] in self.program_list.keys():
-                            process_thread = self.program_list[command["programId"]](self.max_process_id()+1)
+                            process_thread = self.program_list[command["programId"]](self.max_process_id()+1, command["programId"])
                             process_thread.start()
                             self.running_processes.append(process_thread)
                     except Exception as e:
@@ -179,17 +179,23 @@ class Program:
         while self.running:
             if self.running_processes:
                 for process in self.running_processes:        
-                    print(f"sending data about process {process.id}") #TODO
-
-
+                    print(f"sending data about process {process.id}")
+                    url = f"{self.server_url}/device/process/addProcessInfo"
+                    headers = {"Authorization": self.session_id}
+                    data = [{
+                            "process_id": process.id,
+                            "status": process.status,
+                            "output": process.output,
+                            "programId": process.programId,
+                        }
+                    ]
+                    try:
+                        response = requests.post(url, json=data, headers=headers)
+                        if response.status_code != 200:
+                            print(f"Failed to send data for process {process.id}: {response.status_code}")
+                    except Exception as e:
+                        print(f"Exception sending data for process {process.id}: {e}")
             time.sleep(5)  # Small delay to avoid busy loop
-
-
-            # TODO: sending data with info about:
-            # - output
-            # - status
-            # - programId
-            # - processId
 
     #############################################
 
