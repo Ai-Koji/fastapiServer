@@ -92,23 +92,25 @@ class Program:
 
     # auth if session id is relevant
     def authorize(self):
-        while self.need_auth:
-            print("authorization")
-            try:
-                url = f"{self.server_url}/device/auth/startSession"
-                payload = {"device_id": self.device_id, "password": self.password}
-                response = requests.post(url, json=payload)
-                if response.status_code == 200:
-                    data = response.json()
-                    self.session_id = data["session_id"]
-                    self.session_expiration = time.time() + 3600  # Assume 1 hour expiration
-                    self.save_config()
-                    self.need_auth = False
-                    print(f"Re-authorized: new session_id {self.session_id}")
-                else:
-                    print(f"Authorization failed: {response.status_code}")
-            except Exception as e:
-                print(f"Error during authorization: {e}")
+        while self.running:
+            if self.need_auth:
+                print("authorization")
+                try:
+                    url = f"{self.server_url}/device/auth/startSession"
+                    payload = {"device_id": self.device_id, "password": self.password}
+                    response = requests.post(url, json=payload)
+                    if response.status_code == 200:
+                        data = response.json()
+                        self.session_id = data["session_id"]
+                        self.session_expiration = time.time() + 3600  # Assume 1 hour expiration
+                        self.save_config()
+                        self.need_auth = False
+                        print(f"Re-authorized: new session_id {self.session_id}")
+                    else:
+                        sleep(60)
+                        print(f"Authorization failed: {response.status_code}")
+                except Exception as e:
+                    print(f"Error during authorization: {e}")
 
     #############################################
 
@@ -177,25 +179,26 @@ class Program:
         print("start sending data")
         while self.running and not self.need_auth:
             if self.running_processes:
+                data = []
                 for process in self.running_processes:        
-                    print(f"sending data about process {process.id}")
-                    url = f"{self.server_url}/device/process/addProcessInfo"
-                    headers = {"Authorization": self.session_id}
-                    data = [{
-                            "process_id": process.id,
-                            "status": process.status,
-                            "output": process.output,
-                            "programId": process.programId,
-                        }
-                    ]
-                    try:
-                        response = requests.post(url, json=data, headers=headers)
-                        if response.status_code == 403:
-                            self.need_auth = True
-                        elif response.status_code != 200:
-                            print(f"Failed to send data for process {process.id}: {response.status_code}")
-                    except Exception as e:
-                        print(f"Exception sending data for process {process.id}: {e}")
+                    data.append({
+                        "process_id": process.id,
+                        "status": process.status,
+                        "output": process.output,
+                        "programId": process.programId,
+                    })
+
+                print(f"sending data about processes")
+                url = f"{self.server_url}/device/process/addProcessInfo"
+                headers = {"Authorization": self.session_id}
+                try:
+                    response = requests.post(url, json=data, headers=headers)
+                    if response.status_code == 403:
+                        self.need_auth = True
+                    elif response.status_code != 200:
+                        print(f"Failed to send data for process {process.id}: {response.status_code}")
+                except Exception as e:
+                    print(f"Exception sending data for process {process.id}: {e}")
             time.sleep(5)  # Small delay to avoid busy loop
         print("end of send_data thread")
 
