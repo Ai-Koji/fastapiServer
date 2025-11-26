@@ -174,19 +174,34 @@ class Program:
 
 
     # send data to server
-    def send_data(self, data):
-        
-        # TODO: POST data to some endpoint with Authorization
-        pass
+    def send_data(self):
+        print("start sending data")
+        while self.running:
+            if self.running_processes:
+                for process in self.running_processes:        
+                    print(f"sending data about process {process.id}") #TODO
+
+
+            time.sleep(5)  # Small delay to avoid busy loop
+
+
+            # TODO: sending data with info about:
+            # - output
+            # - status
+            # - programId
+            # - processId
+
+    #############################################
 
     # start threads for program
     def start_connection(self):
         self.running = True
         listener_thread = threading.Thread(target=self.listen_for_commands)
         executor_thread = threading.Thread(target=self.execute_command)
+        send_data_thread = threading.Thread(target=self.send_data)
         listener_thread.start()
         executor_thread.start()
-        # TODO: send_data thread
+        send_data_thread.start()
 
     # main function for start
     def start(self):
