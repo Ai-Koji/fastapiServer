@@ -95,12 +95,12 @@ async def addCommand(request: Request):
 
     devices[device_id]["commands"].append(command)
 
-    return {"status": "Command added successfully"}
+    return {"status": "Command added successfully "}
 
 
-# adding command to device
+# adding info from device
 @processRouter.post("/addProcessInfo")
-def addCommand(request: Request):
+async def addCommand(request: Request):
     sessionID = request.headers.get("Authorization")
 
     device_id, device_data = find_device_by_session_id(sessionID)
@@ -112,9 +112,9 @@ def addCommand(request: Request):
         )
 
     # getting json data and save
-    data = request.json()
+    data = await request.json()
 
-    devices[device_id]["processInfo"][data["processId"]] = data
+    devices[device_id]["processInfo"] = data
 
     return {"status": "Command processResult saved successfully"}
 
