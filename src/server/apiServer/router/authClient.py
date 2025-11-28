@@ -9,8 +9,6 @@ from globals import *
 
 authClientRouter = APIRouter(prefix="/client/auth")
 
-# TODO: add clean sessoinId from DB by time
-# TODO: add sha256
 
 def find_user_by_session_id(session_id):
     for login, user_data  in clients.items():

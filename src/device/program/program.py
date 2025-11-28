@@ -172,7 +172,6 @@ class Program:
                     except Exception as ex:
                         print(f"not found: {ex}")
                 
-                # TODO: add DELETE PROGRAM
             time.sleep(1)  # Small delay to avoid busy loop
         self.stop_all_processes()
 

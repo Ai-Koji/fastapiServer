@@ -11,8 +11,6 @@ import string
 
 authRouter = APIRouter(prefix="/device/auth")
 
-# TODO: add clean sessoinId from DB by time
-
 def generate_password(length=12):
     characters = string.ascii_letters + string.digits + string.punctuation
     password = ''.join(random.choice(characters) for _ in range(length))
