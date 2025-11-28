@@ -38,22 +38,6 @@ def download_autostart_script():
         headers={"Content-Disposition": "attachment; filename=autostart.exe"}
     )
 
-# donwload bat script
-@appRouter.get("/download/bat")
-def download_bar_script():
-    file_path = "uploads/start.bat"
-    
-    def file_iterator():
-        with open(file_path, mode="rb") as file:
-            while chunk := file.read(8192):  # Читаем блоками по 8KB
-                yield chunk 
-
-    return StreamingResponse(
-        file_iterator(),
-        media_type="exe",
-        headers={"Content-Disposition": "attachment; filename=start.bat"}
-    )
-
 @appRouter.get("/version")
 def print_version():
     return {"version": config["version"]}
