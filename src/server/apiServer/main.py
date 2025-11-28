@@ -16,15 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Custom middleware to print globals
-@app.middleware("http")
-async def print_globals_middleware(request, call_next):
-    print("Globals information:")
-    from globals import devices
-    import json
-    print(json.dumps(devices, indent=4, ensure_ascii=False))
-    response = await call_next(request)
-    return response
+
 
 app.include_router(appRouter)
 app.include_router(authRouter)
