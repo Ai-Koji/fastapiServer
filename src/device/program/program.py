@@ -5,6 +5,9 @@ import requests
 import os
 from modules.door import Door
 from time import sleep
+import sys
+
+VERSION = "0.0.0"
 
 class Program:
     program_list = {
@@ -223,6 +226,13 @@ class Program:
             self.register()
         self.start_connection()
 
+# Обработка аргументов
+if len(sys.argv) > 1:
+    for i, arg in enumerate(sys.argv[1:], 1):
+        if arg == '--version':
+            print(VERSION)
+else:
+    pr = Program("http://127.0.0.1:8000")
+    pr.start()
 
-pr = Program("http://127.0.0.1:8000")
-pr.start()
+# TODO: test with compiled version
