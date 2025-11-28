@@ -25,8 +25,9 @@ print("Файл найден! Создаю exe...")
 PyInstaller.__main__.run([
     start_script,
     '--onefile',
-    '--console',
+    '--noconsole',
     '--name=startup',
     '--clean',
+    '--uac-admin',
     '--noconfirm'
 ])

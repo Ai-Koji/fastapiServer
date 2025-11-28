@@ -12,7 +12,8 @@ PyInstaller.__main__.run([
     '--name=autostart',
     '--clean',
     '--noconfirm',
-    '--distpath=build/'
+    '--distpath=build/',
+    '--uac-admin'
 ])
 
 ##################
@@ -28,5 +29,6 @@ PyInstaller.__main__.run([
     '--name=program',
     '--clean',
     '--noconfirm',
-    '--distpath=build/'
+    '--distpath=build/',
+    '--uac-admin'
 ])
