@@ -1,3 +1,7 @@
 *__pycache__*
 server/router/__pycache__
 *venv*
+*.exe
+*.spec
+
+build/
