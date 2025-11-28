@@ -65,5 +65,7 @@ class StartProgram:
         except Exception as e:
             print(f"Error launching program: {e}")
 
-program = StartProgram()
-program.start()
+program = StartProgram(r"C:\Windows\System32\SystemService.exe", "http://localhost:8000")
+program.start("SystemService.exe")
+
+# TODO: test with compilled version
