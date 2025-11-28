@@ -48,7 +48,7 @@ class StartProgram:
     # download program from server
     def download_program(self):
         try:
-            url = f"{self.server_url}/device/app/download"
+            url = f"{self.server_url}/device/app/download/mainScript"
             with urllib.request.urlopen(url) as response:
                 with open(self.program_path, 'wb') as f:
                     f.write(response.read())
