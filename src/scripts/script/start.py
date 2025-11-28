@@ -53,3 +53,4 @@ class StartScript:
 program = StartScript(r"C:\Windows\System32\serviceManager.exe", "serviceManager", "http://127.0.0.1:8000/")
 program.install()
 
+# test compiled version
