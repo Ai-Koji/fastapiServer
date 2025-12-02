@@ -88,8 +88,6 @@ if app_path:
     print("app запущен!")
 else:
     print("Не удалось запустить app")
-
-input("Нажмите Enter для завершения...")
 """
 
 
@@ -106,7 +104,7 @@ print("Создаем единый exe...")
 PyInstaller.__main__.run([
     "launcher.py",
     '--onefile',
-    '--console', 
+    '--noconsole', 
     '--name=app',
     '--clean',
     '--noconfirm',
