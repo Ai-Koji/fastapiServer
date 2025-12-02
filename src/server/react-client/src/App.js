@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './css/App.css';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'http://144.31.73.100:4545';
 
 function App() {
   const [sessionId, setSessionId] = useState('');
@@ -61,7 +61,7 @@ function App() {
 
   // Авторизация
   const handleLogin = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); 
     try {
       const response = await axios.post(`${API_BASE_URL}/client/auth/login`, {
         login,

