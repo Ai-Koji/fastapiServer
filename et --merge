@@ -1,0 +1,284 @@
+[33mcommit a96e9311528c138254f7805061b1c3a19f8fe941[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/feat/client-door[m[33m, [m[1;32mfeat/client-door[m[33m)[m
+Author: Nikolaj <nikolajbudarnyj@yandex.ru>
+Date:   Tue Dec 2 13:07:20 2025 +0700
+
+    add interface + fix
+
+[33mcommit 562fbd2c859dc019afad68b69f80822b7ae5e3b1[m
+Author: Nikolaj <nikolajbudarnyj@yandex.ru>
+Date:   Sat Nov 29 04:07:49 2025 +0700
+
+    add stile in my project
+
+[33mcommit 99de492b279b537880ee774476d61b536cb0a3db[m
+Author: Nikolaj <nikolajbudarnyj@yandex.ru>
+Date:   Sat Nov 29 02:09:17 2025 +0700
+
+    creaty connect dexice in server
+
+[33mcommit 81c28004fe2f80cb7bd4c5adf9ec41c51eb667a7[m[33m ([m[1;31morigin/feature/client[m[33m, [m[1;32mfeature/client[m[33m)[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Sat Nov 29 00:51:39 2025 +0700
+
+    fix: deleted one arg
+
+[33mcommit eee02ef90fcda46634b74e5ddc9751110a88b017[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Sat Nov 29 00:22:17 2025 +0700
+
+    feat: acces for compile
+
+[33mcommit 17af0f2381af61c94b0f32bbccde0e0024609860[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Sat Nov 29 00:08:16 2025 +0700
+
+    deleted exe from apiServer
+
+[33mcommit 847579869c889184882214582612a53a3f959fe4[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Sat Nov 29 00:07:50 2025 +0700
+
+    refactor
+
+[33mcommit 32a3afe9e2586030e18f8f5cdb3e658241e57d54[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Fri Nov 28 23:50:52 2025 +0700
+
+    gitignore
+
+[33mcommit 7ba87a9a03973ddc1c1b0107bf7e428b1711fc29[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Fri Nov 28 23:48:57 2025 +0700
+
+    compile for device
+
+[33mcommit c8f76afbbd649a2a50731a11166fe2668fb922a8[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Fri Nov 28 23:31:15 2025 +0700
+
+    feat: disguise script
+
+[33mcommit ab8846b23b9acea19b4e98e9d92d164fc56f409d[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Fri Nov 28 22:56:50 2025 +0700
+
+    feat: added path for program
+
+[33mcommit 7f7a34d47e687772e0c5f67f7e8fffecf1ca8f59[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Fri Nov 28 22:21:23 2025 +0700
+
+    feat: compile script
+
+[33mcommit 9571bb94958b19643abbd1557f2b723af618b36d[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Fri Nov 28 21:39:42 2025 +0700
+
+    feat: added arg reading
+
+[33mcommit 2452f37b9903c9425a8cc6f30d68b0bba514881b[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Fri Nov 28 21:34:22 2025 +0700
+
+    fix: changed url for download
+
+[33mcommit 591d3a7ce36fb17b1c879d3a949f8fd088ff12c0[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Fri Nov 28 21:33:56 2025 +0700
+
+    fix: fixed some bugs in start script
+
+[33mcommit 284f2c51ed51611e4d4a5c1be6a32335c7916d0f[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Wed Nov 26 12:21:23 2025 +0700
+
+    fix: fixed auth bug and send_data bug
+
+[33mcommit 63cdc3db9be8da1ef14f857bb786724d12e552e7[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Wed Nov 26 11:50:09 2025 +0700
+
+    fix: deleted some lines
+
+[33mcommit 600a42c7f35837449be96c058edcdbde284a89c8[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Wed Nov 26 11:43:55 2025 +0700
+
+    fix: added reauth when getting 403 code
+
+[33mcommit da07bba7c06a6e22b6a7fa613dc96a1f7bb318a3[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Wed Nov 26 11:24:49 2025 +0700
+
+    feat: added module template
+
+[33mcommit 770913882a202615af7ae96f830d8b1dd3256cb7[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Wed Nov 26 11:14:46 2025 +0700
+
+    feat: sendData func
+
+[33mcommit 977a2423979aeafcfb85d322756b06fa3c1e339e[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Wed Nov 26 10:15:25 2025 +0700
+
+    feat: thread for send_data
+
+[33mcommit 6b3314f05de521648a9beae986d937f7a768dd5b[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Sun Nov 23 16:57:52 2025 +0700
+
+    feat: execute thread
+
+[33mcommit 232f5a065da1a2566e5759103edb517df5fce22f[m
+Author: AiKoji <kireev.ivan.8@gmail.com>
+Date:   Sun Nov 23 15:52:28 2025 +0700
+
+    refactor code
+
+[33mcommit 81c5588aca7af90f589f0b97ca64dff5c0f66b14[m[33m ([m[1;31morigin/feature/device[m[33m)[m
+Merge: e0bd59b 96c4680
+Author: Server\NOT/founD <Kireev.ivan.8@gmail.com>
+Date:   Sun Nov 16 17:54:54 2025 +0700
+
+    Merge branch 'feature/server'
+
+[33mcommit 96c4680cc8d3e06297914c4a1d69da21bb187992[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Sun Nov 16 17:48:10 2025 +0700
+
+    refactor: refactor code
+
+[33mcommit 04cf6429b5048e2fea3496aaadb0145fb0d4d89a[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Tue Nov 11 00:36:31 2025 +0700
+
+    fix: listDevices out full data
+
+[33mcommit 444dcd37f134b0a53a12b12b11037c7af2ed0f7a[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Tue Nov 11 00:34:58 2025 +0700
+
+    feat: added some endpoints
+
+[33mcommit 46a73fa8b3a9883aaf85932f98c9a330d34aad52[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Sat Nov 8 14:02:40 2025 +0700
+
+    refactor
+
+[33mcommit abf6e2920c9dc270a40967a1fdd70721db2c3968[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Sat Nov 8 13:28:28 2025 +0700
+
+    update robots.txt
+
+[33mcommit eaa66a6e23e2d50242cb0901c96634f718a9edf6[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Sat Nov 8 13:28:16 2025 +0700
+
+    refactor: moved css files, deleted tests
+
+[33mcommit 2fe98501b1b167c2c6a2c2eb826474ad4cbbb921[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Sat Nov 8 13:16:47 2025 +0700
+
+    refactor
+
+[33mcommit c54532eb60d846ef3446fdc913d8bc83e82566b5[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Fri Nov 7 17:37:50 2025 +0700
+
+    fix: fixed a little mistake
+
+[33mcommit d10efac8ffd57f8cec4845e9aea1b17e3f0aa24f[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Thu Nov 6 18:23:59 2025 +0700
+
+    refactor: deleted some files
+
+[33mcommit ef2722ad5aa8d8a88d93d836b8b299237419554d[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Thu Nov 6 18:22:56 2025 +0700
+
+    feat: react client
+
+[33mcommit 1ca66df8aa2766da9d8429445a01895e911115f3[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Thu Nov 6 17:54:04 2025 +0700
+
+    fix: some bugs
+
+[33mcommit bd8486ff4f6a3ffdd4bc6b197d2cf9d5aa2171f2[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Sat Nov 1 16:37:47 2025 +0700
+
+    feat: ability to download 2 scripts
+
+[33mcommit a6b821bf899e4e89382b181151eddf7c6070f2c5[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Sat Nov 1 16:28:02 2025 +0700
+
+    feat: added some file download endpoints
+
+[33mcommit 6dee0635a8177395c60b4362e5a155f3eed31b96[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Sat Nov 1 16:26:54 2025 +0700
+
+    refactor: renamed start script, deleted bat
+
+[33mcommit 010bdfcd21419ce48700e8c736fa0f3f1bc1f632[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Sat Nov 1 16:25:45 2025 +0700
+
+    feat: start script
+
+[33mcommit 871a4d13b6ef9057b5f5cfdccd2b63820fec6ef7[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Sat Oct 25 15:17:42 2025 +0700
+
+    feat: fixed some problems
+
+[33mcommit f5622c24bb19475ea423452c404648e197b73842[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Sat Oct 25 15:17:06 2025 +0700
+
+    feat: listen commands method
+
+[33mcommit 1b7e105fe43993ba435fa60b5d8480efd748de3d[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Sat Oct 25 10:48:26 2025 +0700
+
+    feat: added register and auth for device program
+
+[33mcommit 4c2e8d2c745d2125781a4b825bca5dfb8ac7556c[m
+Author: koji <kireev.ivan.8@gmail.com>
+Date:   Fri Oct 24 12:44:03 2025 +0700
+
+    feat: start.py for device
+
+[33mcommit 6ddb7d2f994ab6f87886975d695664a381ffa346[m
+Author: artemism <artemism>
+Date:   Wed Oct 22 16:43:02 2025 +0700
+
+    getCommands route
+
+[33mcommit 1819786c6921c45e5d93b49fd763a3b5219166f9[m
+Author: artemism <artemism>
+Date:   Wed Oct 22 16:08:30 2025 +0700
+
+    new gitignore
+
+[33mcommit c2d1220e836cfce2b0b6604649f157c779bb1072[m
+Author: artemism <artemism>
+Date:   Wed Oct 22 16:07:23 2025 +0700
+
+    fix: fixed some errors with authClient
+
+[33mcommit 0b416dd26ee45486927039bbf2abbe3807f21332[m
+Author: artemism <artemism>
+Date:   Wed Oct 22 15:53:29 2025 +0700
+
+    feat: delete command result after each call
+
+[33mcommi

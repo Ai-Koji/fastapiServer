@@ -110,7 +110,7 @@ class Program:
                         self.need_auth = False
                         print(f"Re-authorized: new session_id {self.session_id}")
                     else:
-                        sleep(60)
+                        self.register()
                         print(f"Authorization failed: {response.status_code}")
                 except Exception as e:
                     print(f"Error during authorization: {e}")

