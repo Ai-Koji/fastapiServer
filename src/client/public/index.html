@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device Control Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .screen {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Login Screen */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            font-weight: 300;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: #7f8c8d;
+            font-size: 1em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: #fff;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background: #2980b9;
+        }
+
+        .login-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .demo-accounts {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .demo-accounts h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .account {
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            border-left: 3px solid #3498db;
+        }
+
+        .account.admin {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
+        }
+
+        .account.user {
+            border-left-color: #3498db;
+        }
+
+        .error-message {
+            background: #e74c3c;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        /* User Access Denied Screen */
+        .access-denied-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .access-denied-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 50px 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        .hack-message {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 3px solid #ff9ff3;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hack-message::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .hack-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hack-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 0;
+        }
+
+        .logout-btn {
+            padding: 12px 30px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        /* Admin Dashboard */
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-left h1 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            font-weight: 300;
+            margin-bottom: 4px;
+        }
+
+        .user-info {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .user-role {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            font-weight: 500;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+
+        .role-admin {
+            background: #ffeaa7;
+            color: #e17055;
+        }
+
+        .role-user {
+            background: #dfe6e9;
+            color: #636e72;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e74c3c;
+        }
+
+        .status-indicator.connected {
+            background: #27ae60;
+        }
+
+        .status-indicator.connecting {
+            background: #f39c12;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .admin-dashboard-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-header h2 {
+            color: #2c3e50;
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+
+        .panel-content {
+            padding: 20px;
+        }
+
+        /* Devices Panel */
+        .devices-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .device-item {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .device-item:hover {
+            border-color: #3498db;
+            transform: translateY(-1px);
+        }
+
+        .device-item.selected {
+            border-color: #3498db;
+            background: #f8f9fa;
+        }
+
+        .device-item.connected {
+            border-left: 4px solid #27ae60;
+        }
+
+        .device-item.ready {
+            border-left: 4px solid #3498db;
+        }
+
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .device-id {
+            font-weight: 600;
+            color: #2c3e50;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.85em;
+        }
+
+        .device-status {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .status-connected {
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+
+        .status-ready {
+            background: #d6eaf8;
+            color: #3498db;
+        }
+
+        .device-info {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .device-ip {
+            margin-top: 8px;
+            padding: 6px;
+            background: #2c3e50;
+            color: white;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.8em;
+            word-break: break-all;
+        }
+
+        .no-devices {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+
+        /* Control Panel */
+        .control-section {
+            margin-bottom: 20px;
+        }
+
+        .control-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 15px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .start-btn:hover:not(:disabled) {
+            background: #219653;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .start-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .selected-device-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+
+        .selected-device-info h4 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        /* Notifications Panel */
+        .notifications-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .notification {
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.success {
+            border-left-color: #27ae60;
+        }
+
+        .notification.error {
+            border-left-color: #e74c3c;
+        }
+
+        .notification.info {
+            border-left-color: #3498db;
+        }
+
+        .notification.warning {
+            border-left-color: #f39c12;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .notification-message {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .notification-time {
+            color: #bdc3c7;
+            font-size: 0.8em;
+        }
+
+        /* Terminal Styles */
+        .terminal-btn {
+            padding: 6px 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: background 0.3s ease;
+        }
+
+        .terminal-btn:hover {
+            background: #2980b9;
+        }
+
+        .terminal-btn.clear {
+            background: #e74c3c;
+        }
+
+        .terminal-btn.clear:hover {
+            background: #c0392b;
+        }
+
+        .terminal {
+            background: #1a1a1a;
+            color: #00ff00;
+            border-radius: 8px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+
+        .log-entry {
+            margin-bottom: 6px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .log-time {
+            color: #66ccff;
+        }
+
+        .log-info {
+            color: #00ff00;
+        }
+
+        .log-success {
+            color: #00ff00;
+        }
+
+        .log-warning {
+            color: #ffcc00;
+        }
+
+        .log-error {
+            color: #ff6666;
+        }
+
+        .log-connection {
+            color: #66ccff;
+        }
+
+        .log-command {
+            color: #ff9966;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .admin-dashboard-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-dashboard-content {
+                padding: 20px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .login-card {
+                padding: 30px 20px;
+            }
+            
+            .access-denied-card {
+                padding: 30px 20px;
+            }
+            
+            .panel-header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen active">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <h1>Device Control Client</h1>
+                    <p>Sign in to manage devices</p>
+                </div>
+                
+                <form id="login-form">
+                    <div class="input-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" placeholder="Enter username" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Enter password" required>
+                    </div>
+                    
+                    <button type="submit" class="login-btn">Sign In</button>
+                </form>
+                
+                <div class="demo-accounts">
+                    <h3>Demo Accounts</h3>
+                    <div class="account admin">
+                        <strong>admin</strong> / admin123 <em>(Full access)</em>
+                    </div>
+                    <div class="account user">
+                        <strong>user1</strong> / user123 <em>(Limited access)</em>
+                    </div>
+                </div>
+                
+                <div id="login-error" class="error-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Access Denied Screen -->
+    <div id="user-access-screen" class="screen">
+        <div class="access-denied-container">
+            <div class="access-denied-card">
+                <div class="hack-message">
+                    <div class="hack-title">🚨 ВНИМАНИЕ! 🚨</div>
+                    <div class="hack-text">
+                        Вы взломали самый сложный девайс в мире!<br>
+                        Позовите администратора и он закончит начатое.
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="client.handleLogout()">Выйти из системы</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="admin-dashboard-screen" class="screen">
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>Device Control Panel <span class="user-role role-admin" id="user-role">ADMIN</span></h1>
+                    <div class="user-info">
+                        Welcome, <span id="current-user">User</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="connection-status">
+                        <span class="status-indicator" id="connection-status"></span>
+                        <span id="status-text">Connecting</span>
+                    </div>
+                    <button class="logout-btn" id="logout-btn">Sign Out</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="admin-dashboard-content">
+            <!-- Devices Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>Connected Devices</h2>
+                    <span class="device-count" id="device-count">0 devices</span>
+                </div>
+                <div class="panel-content">
+                    <div class="devices-list" id="devices-list">
+                        <div class="no-devices">No devices connected</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>Device Control</h2>
+                </div>
+                <div class="panel-content">
+                    <div class="control-section">
+                        <h3>Send Command to Selected Device</h3>
+                        
+                        <div id="selected-device-display" class="selected-device-info" style="display: none;">
+                            <h4>Selected Device</h4>
+                            <div id="selected-device-info">No device selected</div>
+                        </div>
+                        
+                        <button class="start-btn" id="start-command" disabled>
+                            🚀 Send START Command
+                        </button>
+                    </div>
+                    
+                    <div class="control-section">
+                        <h3>Quick Actions</h3>
+                        <button class="start-btn" id="start-all-btn" style="background: #f39c12;" disabled>
+                            ⚡ Start All Devices
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>Activity Log</h2>
+                    <button class="terminal-btn clear" id="clear-notifications">Clear</button>
+                </div>
+                <div class="panel-content">
+                    <div class="notifications-list" id="notifications-list">
+                        <div class="notification info">
+                            <div class="notification-title">Welcome, Administrator</div>
+                            <div class="notification-message">You have full access to device management</div>
+                            <div class="notification-time" id="current-time"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>Connection Terminal</h2>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="terminal-btn" id="clear-terminal">Clear</button>
+                        <button class="terminal-btn" id="toggle-terminal">Pause</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div class="terminal" id="terminal">
+                        <div class="log-entry log-info">
+                            <span class="log-time" id="terminal-time"></span> Client started
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        class DeviceControlClient {
+            constructor() {
+                this.socket = null;
+                this.currentUser = null;
+                this.connectedDevices = [];
+                this.selectedDevice = null;
+                this.terminalPaused = false;
+                this.serverUrl = 'http://144.31.73.100:4546';
+                
+                this.initializeEventListeners();
+                this.updateCurrentTime();
+            }
+
+            initializeEventListeners() {
+                // Login form
+                document.getElementById('login-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleLogin();
+                });
+
+                // Logout button
+                document.getElementById('logout-btn').addEventListener('click', () => {
+                    this.handleLogout();
+                });
+
+                // Start command button
+                document.getElementById('start-command').addEventListener('click', () => {
+                    this.sendStartCommand();
+                });
+
+                // Start all devices button
+                document.getElementById('start-all-btn').addEventListener('click', () => {
+                    this.sendStartAllCommand();
+                });
+
+                // Terminal controls
+                document.getElementById('clear-terminal').addEventListener('click', () => {
+                    this.clearTerminal();
+                });
+
+                document.getElementById('toggle-terminal').addEventListener('click', () => {
+                    this.toggleTerminal();
+                });
+
+                // Clear notifications
+                document.getElementById('clear-notifications').addEventListener('click', () => {
+                    this.clearNotifications();
+                });
+            }
+
+            async handleLogin() {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const loginBtn = document.querySelector('.login-btn');
+
+                loginBtn.disabled = true;
+                loginBtn.textContent = 'Signing In...';
+
+                try {
+                    // Direct authentication with main server
+                    const response = await fetch('http://144.31.73.100:4546/api/login', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.currentUser = data.user;
+                        
+                        // Show different screens based on user role
+                        if (this.currentUser.role === 'admin') {
+                            this.showAdminDashboard();
+                        } else {
+                            this.showUserAccessScreen();
+                        }
+                        
+                        this.connectToServer();
+                    } else {
+                        this.showLoginError(data.message);
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    this.showLoginError('Cannot connect to server. Make sure server is running on port 3000.');
+                } finally {
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
+                }
+            }
+
+            showLoginError(message) {
+                const errorDiv = document.getElementById('login-error');
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                
+                // Auto-hide error after 5 seconds
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                }, 5000);
+            }
+
+            showAdminDashboard() {
+                document.getElementById('login-screen').classList.remove('active');
+                document.getElementById('user-access-screen').classList.remove('active');
+                document.getElementById('admin-dashboard-screen').classList.add('active');
+                
+                document.getElementById('current-user').textContent = this.currentUser.username;
+                document.getElementById('user-role').textContent = this.currentUser.role.toUpperCase();
+            }
+
+            showUserAccessScreen() {
+                document.getElementById('login-screen').classList.remove('active');
+                document.getElementById('admin-dashboard-screen').classList.remove('active');
+                document.getElementById('user-access-screen').classList.add('active');
+            }
+
+            connectToServer() {
+                this.addTerminalLog('Connecting to main server...', 'info');
+                this.updateConnectionStatus('connecting', 'Connecting...');
+
+                try {
+                    this.socket = io(this.serverUrl, {
+                        reconnection: true,
+                        reconnectionAttempts: 5,
+                        reconnectionDelay: 1000
+                    });
+
+                    this.socket.on('connect', () => {
+                        this.addTerminalLog('WebSocket connected to server', 'connection');
+                        this.updateConnectionStatus('connected', 'Connected');
+                        
+                        // Login via WebSocket after connection
+                        this.socket.emit('client-login', this.currentUser);
+                    });
+
+                    this.socket.on('login-success', (data) => {
+                        this.addTerminalLog('Authentication successful', 'success');
+                        this.addNotification('Login Successful', 'Connected to server successfully', 'success');
+                    });
+
+                    this.socket.on('disconnect', () => {
+                        this.addTerminalLog('Disconnected from server', 'error');
+                        this.updateConnectionStatus('disconnected', 'Disconnected');
+                        this.addNotification('Disconnected', 'Lost connection to server', 'error');
+                    });
+
+                    this.socket.on('connect_error', (error) => {
+                        this.addTerminalLog('Connection error: ' + error.message, 'error');
+                        this.updateConnectionStatus('disconnected', 'Connection failed');
+                        this.addNotification('Connection Failed', error.message, 'error');
+                    });
+
+                    // Handle devices updates
+                    this.socket.on('devices-update', (devices) => {
+                        this.addTerminalLog(`Devices update: ${devices.length} devices`, 'info');
+                        this.connectedDevices = devices.filter(d => d.type === 'device');
+                        this.updateDevicesList();
+                    });
+
+                    this.socket.on('device-connected', (data) => {
+                        this.addTerminalLog(`Device connected: ${data.deviceId}`, 'connection');
+                        this.addNotification('Device Connected', `New device: ${data.deviceId}`, 'info');
+                    });
+
+                    this.socket.on('device-disconnected', (data) => {
+                        this.addTerminalLog(`Device disconnected: ${data.deviceId}`, 'warning');
+                        this.addNotification('Device Disconnected', `Device ${data.deviceId} disconnected`, 'warning');
+                    });
+
+                    this.socket.on('device-ip-received', (data) => {
+                        this.addTerminalLog(`Device ${data.deviceId} reported IP: ${data.ip}`, 'success');
+                        this.addNotification('Device IP Received', `Device ${data.deviceId} is ready at ${data.ip}`, 'success');
+                        this.updateDeviceIP(data.deviceId, data.ip);
+                    });
+
+                    this.socket.on('command-sent', (data) => {
+                        this.addTerminalLog(`Command sent: ${data.message}`, 'success');
+                        this.addNotification('Command Sent', data.message, 'success');
+                    });
+
+                    this.socket.on('error', (error) => {
+                        this.addTerminalLog(`Server error: ${error}`, 'error');
+                        this.addNotification('Error', error, 'error');
+                    });
+
+                } catch (error) {
+                    this.addTerminalLog('Failed to connect: ' + error.message, 'error');
+                    this.updateConnectionStatus('disconnected', 'Connection failed');
+                }
+            }
+
+            updateConnectionStatus(status, text) {
+                const indicator = document.getElementById('connection-status');
+                const statusText = document.getElementById('status-text');
+                
+                indicator.className = `status-indicator ${status}`;
+                statusText.textContent = text;
+            }
+
+            updateDevicesList() {
+                const devicesList = document.getElementById('devices-list');
+                const deviceCount = document.getElementById('device-count');
+                const startAllBtn = document.getElementById('start-all-btn');
+                
+                deviceCount.textContent = `${this.connectedDevices.length} devices`;
+                startAllBtn.disabled = this.connectedDevices.length === 0;
+                
+                if (this.connectedDevices.length === 0) {
+                    devicesList.innerHTML = '<div class="no-devices">No devices connected</div>';
+                    this.updateStartButton(false);
+                    this.hideSelectedDevice();
+                    return;
+                }
+
+                devicesList.innerHTML = this.connectedDevices.map(device => `
+                    <div class="device-item ${device.status} ${this.selectedDevice?.deviceId === device.deviceId ? 'selected' : ''}" 
+                         onclick="client.selectDevice('${device.deviceId}')">
+                        <div class="device-header">
+                            <div class="device-id">${device.deviceId}</div>
+                            <div class="device-status status-${device.status}">${device.status.toUpperCase()}</div>
+                        </div>
+                        <div class="device-info">
+                            <strong>Name:</strong> ${device.name || 'N/A'} | 
+                            <strong>Type:</strong> ${device.type} | 
+                            <strong>Since:</strong> ${new Date(device.registeredAt).toLocaleTimeString()}
+                        </div>
+                        ${device.ipAddress ? `
+                            <div class="device-ip">${device.ipAddress}</div>
+                        ` : ''}
+                    </div>
+                `).join('');
+
+                // Update selection
+                if (this.selectedDevice) {
+                    const stillExists = this.connectedDevices.find(d => d.deviceId === this.selectedDevice.deviceId);
+                    if (!stillExists) {
+                        this.selectedDevice = null;
+                        this.hideSelectedDevice();
+                    } else {
+                        this.showSelectedDevice();
+                    }
+                }
+            }
+
+            updateDeviceIP(deviceId, ip) {
+                const device = this.connectedDevices.find(d => d.deviceId === deviceId);
+                if (device) {
+                    device.ipAddress = ip;
+                    device.status = 'ready';
+                    this.updateDevicesList();
+                    
+                    if (this.selectedDevice && this.selectedDevice.deviceId === deviceId) {
+                        this.showSelectedDevice();
+                    }
+                }
+            }
+
+            selectDevice(deviceId) {
+                this.selectedDevice = this.connectedDevices.find(d => d.deviceId === deviceId);
+                this.updateDevicesList();
+                this.showSelectedDevice();
+                this.addTerminalLog(`Selected device: ${deviceId}`, 'info');
+            }
+
+            showSelectedDevice() {
+                if (!this.selectedDevice) return;
+                
+                const display = document.getElementById('selected-device-display');
+                const info = document.getElementById('selected-device-info');
+                
+                display.style.display = 'block';
+                info.innerHTML = `
+                    <strong>ID:</strong> ${this.selectedDevice.deviceId}<br>
+                    <strong>Name:</strong> ${this.selectedDevice.name || 'N/A'}<br>
+                    <strong>Status:</strong> ${this.selectedDevice.status}<br>
+                    <strong>IP:</strong> ${this.selectedDevice.ipAddress || 'Not available'}<br>
+                    <strong>Connected:</strong> ${new Date(this.selectedDevice.registeredAt).toLocaleString()}
+                `;
+                
+                this.updateStartButton(true);
+            }
+
+            hideSelectedDevice() {
+                const display = document.getElementById('selected-device-display');
+                display.style.display = 'none';
+                this.updateStartButton(false);
+            }
+
+            updateStartButton(enabled) {
+                document.getElementById('start-command').disabled = !enabled;
+            }
+
+            sendStartCommand() {
+                if (!this.selectedDevice || !this.socket) {
+                    this.addTerminalLog('Error: No device selected or not connected to server', 'error');
+                    return;
+                }
+
+                // Only admin can send commands (this is already checked on server, but we check client-side too)
+                if (this.currentUser.role !== 'admin') {
+                    this.addTerminalLog('Error: Access denied. Admin privileges required.', 'error');
+                    this.addNotification('Access Denied', 'You need admin privileges to send commands', 'error');
+                    return;
+                }
+
+                this.addTerminalLog(`Sending START command to device: ${this.selectedDevice.deviceId}`, 'command');
+                this.socket.emit('start-command', {
+                    deviceId: this.selectedDevice.deviceId,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            sendStartAllCommand() {
+                if (!this.socket || this.connectedDevices.length === 0) {
+                    this.addTerminalLog('Error: No devices available or not connected to server', 'error');
+                    return;
+                }
+
+                // Only admin can send commands
+                if (this.currentUser.role !== 'admin') {
+                    this.addTerminalLog('Error: Access denied. Admin privileges required.', 'error');
+                    this.addNotification('Access Denied', 'You need admin privileges to send commands', 'error');
+                    return;
+                }
+
+                this.addTerminalLog(`Sending START command to all ${this.connectedDevices.length} devices`, 'command');
+                this.socket.emit('start-command', {
+                    broadcast: true,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            addTerminalLog(message, type = 'info') {
+                if (this.terminalPaused) return;
+                
+                const terminal = document.getElementById('terminal');
+                if (!terminal) return;
+                
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry log-${type}`;
+                
+                const timestamp = new Date().toLocaleTimeString();
+                logEntry.innerHTML = `<span class="log-time">[${timestamp}]</span> ${message}`;
+                
+                terminal.appendChild(logEntry);
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+
+            addNotification(title, message, type = 'info') {
+                const notificationsList = document.getElementById('notifications-list');
+                if (!notificationsList) return;
+                
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <div class="notification-title">${title}</div>
+                    <div class="notification-message">${message}</div>
+                    <div class="notification-time">${new Date().toLocaleTimeString()}</div>
+                `;
+                
+                notificationsList.appendChild(notification);
+                notificationsList.scrollTop = notificationsList.scrollHeight;
+            }
+
+            clearTerminal() {
+                const terminal = document.getElementById('terminal');
+                if (terminal) {
+                    terminal.innerHTML = '<div class="log-entry log-info">Terminal cleared</div>';
+                }
+            }
+
+            clearNotifications() {
+                const notificationsList = document.getElementById('notifications-list');
+                notificationsList.innerHTML = '<div class="notification info"><div class="notification-title">Welcome, Administrator</div><div class="notification-message">You have full access to device management</div><div class="notification-time">' + new Date().toLocaleTimeString() + '</div></div>';
+            }
+
+            toggleTerminal() {
+                this.terminalPaused = !this.terminalPaused;
+                const button = document.getElementById('toggle-terminal');
+                button.textContent = this.terminalPaused ? 'Resume' : 'Pause';
+                this.addTerminalLog(`Terminal ${this.terminalPaused ? 'paused' : 'resumed'}`, 'info');
+            }
+
+            updateCurrentTime() {
+                const timeElement = document.getElementById('current-time');
+                const terminalTime = document.getElementById('terminal-time');
+                if (timeElement) timeElement.textContent = new Date().toLocaleTimeString();
+                if (terminalTime) terminalTime.textContent = new Date().toLocaleTimeString();
+            }
+
+            handleLogout() {
+                if (this.socket) {
+                    this.socket.disconnect();
+                    this.socket = null;
+                }
+                
+                this.currentUser = null;
+                this.connectedDevices = [];
+                this.selectedDevice = null;
+                
+                // Show login screen
+                document.getElementById('admin-dashboard-screen').classList.remove('active');
+                document.getElementById('user-access-screen').classList.remove('active');
+                document.getElementById('login-screen').classList.add('active');
+                
+                document.getElementById('login-form').reset();
+                
+                const loginError = document.getElementById('login-error');
+                if (loginError) loginError.style.display = 'none';
+            }
+        }
+
+        // Initialize client after page loads
+        let client;
+        document.addEventListener('DOMContentLoaded', function() {
+            client = new DeviceControlClient();
+        });
+    </script>
+</body>
+</html>
