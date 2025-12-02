@@ -20,3 +20,8 @@ app.include_router(appRouter)
 app.include_router(authRouter)
 app.include_router(processRouter)
 app.include_router(authClientRouter)
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=7070)

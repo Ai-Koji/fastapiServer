@@ -72,6 +72,7 @@ class StartProgram:
         except Exception as e:
             print(f"Error launching program: {e}")
 
+
 class ServiceManager(win32serviceutil.ServiceFramework):
     _svc_name_ = "ServiceManager"
     _svc_display_name_ = "Service manager"
@@ -107,3 +108,4 @@ else:
 # program.exe install
 # program.exe start
 # program.exe remove
+
