@@ -13,7 +13,7 @@ const io = socketIo(server, {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4546;
 
 // Middleware
 app.use(cors());
@@ -278,6 +278,81 @@ io.on('connection', (socket) => {
   socket.on('error', (error) => {
     console.error('Socket error:', socket.id, error);
   });
+
+// Terminal command from client to device
+socket.on('terminal-command', (data) => {
+  const client = connectedClients.get(socket.id);
+  if (!client) {
+    socket.emit('terminal-error', 'Not authenticated');
+    return;
+  }
+
+  // Check if user has permission
+  if (client.role !== 'admin') {
+    socket.emit('terminal-error', 'Access denied. Admin privileges required.');
+    return;
+  }
+
+  const { deviceId, command } = data;
+  
+  if (!deviceId || !command) {
+    socket.emit('terminal-error', 'Device ID and command are required');
+    return;
+  }
+
+  // Find device by deviceId
+  let targetDeviceSocketId = null;
+  connectedDevices.forEach((device, socketId) => {
+    if (device.deviceId === deviceId) {
+      targetDeviceSocketId = socketId;
+    }
+  });
+
+  if (!targetDeviceSocketId) {
+    socket.emit('terminal-error', `Device ${deviceId} not found`);
+    return;
+  }
+
+  console.log(`Terminal command from ${client.username} to device ${deviceId}: ${command}`);
+
+  // Send command to device
+  io.to(targetDeviceSocketId).emit('terminal-command', {
+    command: command,
+    from: client.username,
+    clientSocketId: socket.id,
+    timestamp: new Date().toISOString()
+  });
+
+  socket.emit('terminal-command-sent', {
+    success: true,
+    deviceId: deviceId,
+    command: command
+  });
+});
+
+// Terminal response from device to client
+socket.on('terminal-response', (data) => {
+  const device = connectedDevices.get(socket.id);
+  if (!device) {
+    console.log('Terminal response from unregistered device:', socket.id);
+    return;
+  }
+
+  const { clientSocketId, response, timestamp } = data;
+  
+  console.log(`Terminal response from device ${device.deviceId}: ${response}`);
+
+  // Forward response to the client who sent the command
+  if (clientSocketId) {
+    io.to(clientSocketId).emit('terminal-response', {
+      deviceId: device.deviceId,
+      deviceName: device.name,
+      response: response,
+      timestamp: timestamp || new Date().toISOString()
+    });
+  }
+});
+  
 });
 
 // Start server
@@ -285,7 +360,7 @@ server.listen(PORT, () => {
   console.log('🚀 ========================================');
   console.log('🚀 Server running on port', PORT);
   console.log('🚀 ========================================');
-  console.log('📍 Access the server at: http://localhost:' + PORT);
+  console.log('📍 Access the server at: http://144.31.73.100:' + PORT);
   console.log('👤 Demo accounts:');
   console.log('   - admin / admin123 (Admin privileges)');
   console.log('   - user1 / user123 (User - limited access)');

