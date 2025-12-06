@@ -572,3 +572,28 @@ body {
         align-items: flex-start;
     }
 }
+
+
+/* Terminal Button Styles */
+.terminal-btn {
+    padding: 6px 12px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background 0.3s ease;
+}
+
+.terminal-btn:hover {
+    background: #2980b9;
+}
+
+.terminal-btn.clear {
+    background: #e74c3c;
+}
+
+.terminal-btn.clear:hover {
+    background: #c0392b;
+}

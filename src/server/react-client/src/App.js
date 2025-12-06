@@ -1,20 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import io from 'socket.io-client';
 import axios from 'axios';
+import Terminal from './components/Terminal';
 import './css/App.css';
 
 const API_BASE_URL = 'http://144.31.73.100:4545';
+const WS_SERVER_URL = 'http://144.31.73.100:4546';
 
 function App() {
   const [sessionId, setSessionId] = useState('');
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [devices, setDevices] = useState([]);
+  const [connectedDevices, setConnectedDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
   const [notifications, setNotifications] = useState([]);
   const [terminalLogs, setTerminalLogs] = useState([]);
   const [terminalPaused, setTerminalPaused] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  
+  const socketRef = useRef(null);
 
   // Уведомления
   const addNotification = (title, message, type = 'info') => {
@@ -28,7 +35,7 @@ function App() {
     setNotifications(prev => [newNotification, ...prev].slice(0, 10));
   };
 
-  // Терминал
+  // Терминал сервера
   const addTerminalLog = (message, type = 'info') => {
     if (terminalPaused) return;
     const newLog = {
@@ -38,6 +45,191 @@ function App() {
       time: new Date().toLocaleTimeString()
     };
     setTerminalLogs(prev => [...prev, newLog]);
+  };
+
+  // Подключение к WebSocket
+  const connectWebSocket = () => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+    }
+
+    socketRef.current = io(WS_SERVER_URL, {
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
+    });
+
+    socketRef.current.on('connect', () => {
+      addTerminalLog('WebSocket connection established', 'connection');
+      setConnectionStatus('connected');
+      
+      if (currentUser) {
+        socketRef.current.emit('client-login', currentUser);
+      }
+    });
+
+    socketRef.current.on('login-success', (data) => {
+      addTerminalLog('Authentication successful', 'success');
+      addNotification('Login Successful', 'Connected to server successfully', 'success');
+    });
+
+    socketRef.current.on('disconnect', () => {
+      addTerminalLog('Disconnected from server', 'error');
+      setConnectionStatus('disconnected');
+      addNotification('Disconnected', 'Lost connection to server', 'error');
+    });
+
+    socketRef.current.on('connect_error', (error) => {
+      addTerminalLog('Connection error: ' + error.message, 'error');
+      setConnectionStatus('disconnected');
+    });
+
+    socketRef.current.on('devices-update', (devices) => {
+      const filteredDevices = devices.filter(d => d.type === 'device');
+      setConnectedDevices(filteredDevices);
+      addTerminalLog(`Devices update: ${filteredDevices.length} devices`, 'info');
+    });
+
+    socketRef.current.on('device-connected', (data) => {
+      addTerminalLog(`Device connected: ${data.deviceId}`, 'connection');
+      addNotification('Device Connected', `New device: ${data.deviceId}`, 'info');
+    });
+
+    socketRef.current.on('device-disconnected', (data) => {
+      addTerminalLog(`Device disconnected: ${data.deviceId}`, 'warning');
+      addNotification('Device Disconnected', `Device ${data.deviceId} disconnected`, 'warning');
+    });
+
+    socketRef.current.on('device-ip-received', (data) => {
+      addTerminalLog(`Device ${data.deviceId} reported IP: ${data.ip}`, 'success');
+      addNotification('Device IP Received', `Device ${data.deviceId} is ready at ${data.ip}`, 'success');
+    });
+
+    socketRef.current.on('command-sent', (data) => {
+      addTerminalLog(`Command sent: ${data.message}`, 'success');
+      addNotification('Command Sent', data.message, 'success');
+    });
+
+    socketRef.current.on('error', (error) => {
+      addTerminalLog(`Server error: ${error}`, 'error');
+      addNotification('Error', error, 'error');
+    });
+  };
+
+  // Авторизация
+  const handleLogin = async (e) => {
+    e.preventDefault(); 
+    try {
+      const response = await axios.post(`${API_BASE_URL}/client/auth/login`, {
+        login,
+        password
+      });
+      
+      setSessionId(response.data.session_id);
+      
+      const user = {
+        username: login,
+        id: login,
+        role: login === 'admin' ? 'admin' : 'user'
+      };
+      
+      setCurrentUser(user);
+      
+      if (user.role === 'admin') {
+        setIsLoggedIn(true);
+        setConnectionStatus('connecting');
+        addTerminalLog('Authentication successful', 'success');
+        
+        // Подключаемся к WebSocket
+        connectWebSocket();
+        
+        // Загружаем устройства из FastAPI
+        fetchDevices();
+      } else {
+        addTerminalLog('Access denied: Admin privileges required', 'error');
+        alert('Access denied. Only admin can access this panel.');
+      }
+      
+    } catch (error) {
+      addTerminalLog('Login failed: ' + (error.response?.data?.detail || error.message), 'error');
+      alert('Login failed: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Получение устройств из FastAPI
+  const fetchDevices = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/device/process/listDevices`, {
+        headers: { Authorization: sessionId }
+      });
+      
+      const devicesList = Object.entries(response.data).map(([id, device]) => ({
+        id: parseInt(id),
+        ...device,
+        status: device.commands && device.commands.length > 0 ? 'ready' : 'connected',
+        ipAddress: device.ipAddress || 'Not available'
+      }));
+      
+      setDevices(devicesList);
+      
+    } catch (error) {
+      addTerminalLog('Failed to fetch FastAPI devices: ' + (error.response?.data?.detail || error.message), 'error');
+    }
+  };
+
+  // Отправка команды через FastAPI
+  const sendCommand = async (deviceId, command) => {
+    try {
+      await axios.post(`${API_BASE_URL}/device/process/addCommand`, {
+        device_id: deviceId,
+        command: command
+      }, {
+        headers: { Authorization: sessionId }
+      });
+      
+      addTerminalLog(`Command sent to device ${deviceId}`, 'success');
+      fetchDevices();
+      
+    } catch (error) {
+      addTerminalLog('Failed to send command: ' + (error.response?.data?.detail || error.message), 'error');
+    }
+  };
+
+  // Отправка START команды через WebSocket
+  const sendStartCommand = () => {
+    if (!selectedDevice) return;
+    
+    const wsDevice = connectedDevices.find(d => d.deviceId === selectedDevice.deviceId);
+    
+    if (!wsDevice || !socketRef.current) {
+      addTerminalLog('Device not connected via WebSocket', 'error');
+      return;
+    }
+    
+    addTerminalLog(`Sending START command to device: ${wsDevice.deviceId}`, 'command');
+    
+    socketRef.current.emit('start-command', {
+      deviceId: wsDevice.deviceId,
+      timestamp: new Date().toISOString()
+    });
+  };
+
+  // Выход
+  const handleLogout = () => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+    
+    setSessionId('');
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+    setDevices([]);
+    setConnectedDevices([]);
+    setSelectedDevice(null);
+    setConnectionStatus('disconnected');
+    setNotifications([]);
+    setTerminalLogs([]);
   };
 
   const clearTerminal = () => {
@@ -59,84 +251,9 @@ function App() {
     }]);
   };
 
-  // Авторизация
-  const handleLogin = async (e) => {
-    e.preventDefault(); 
-    try {
-      const response = await axios.post(`${API_BASE_URL}/client/auth/login`, {
-        login,
-        password
-      });
-      
-      setSessionId(response.data.session_id);
-      setIsLoggedIn(true);
-      setConnectionStatus('connected');
-      addTerminalLog('Authentication successful', 'success');
-      addNotification('Login Successful', 'Connected to server successfully', 'success');
-      
-    } catch (error) {
-      addTerminalLog('Login failed: ' + (error.response?.data?.detail || error.message), 'error');
-      alert('Login failed: ' + (error.response?.data?.detail || error.message));
-    }
-  };
-
-  // Получение устройств
-  const fetchDevices = async () => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/device/process/listDevices`, {
-        headers: { Authorization: sessionId }
-      });
-      
-      const devicesList = Object.entries(response.data).map(([id, device]) => ({
-        id: parseInt(id),
-        ...device,
-        status: device.commands && device.commands.length > 0 ? 'ready' : 'connected',
-        ipAddress: device.ipAddress || 'Not available'
-      }));
-      
-      setDevices(devicesList);
-      addTerminalLog(`Devices updated: ${devicesList.length} devices`, 'info');
-      
-    } catch (error) {
-      addTerminalLog('Failed to fetch devices: ' + (error.response?.data?.detail || error.message), 'error');
-    }
-  };
-
-  // Отправка команды
-  const sendCommand = async (deviceId, command) => {
-    try {
-      await axios.post(`${API_BASE_URL}/device/process/addCommand`, {
-        device_id: deviceId,
-        command: command
-      }, {
-        headers: { Authorization: sessionId }
-      });
-      
-      addTerminalLog(`Command sent to device ${deviceId}`, 'success');
-      addNotification('Command Sent', `Command sent to device ${deviceId}`, 'success');
-      fetchDevices();
-      
-    } catch (error) {
-      addTerminalLog('Failed to send command: ' + (error.response?.data?.detail || error.message), 'error');
-    }
-  };
-
-  // Выход
-  const handleLogout = () => {
-    setSessionId('');
-    setIsLoggedIn(false);
-    setDevices([]);
-    setSelectedDevice(null);
-    setConnectionStatus('disconnected');
-    setNotifications([]);
-    setTerminalLogs([]);
-    addTerminalLog('Client disconnected', 'info');
-  };
-
   // Эффекты
   useEffect(() => {
     if (isLoggedIn) {
-      fetchDevices();
       const interval = setInterval(fetchDevices, 5000);
       return () => clearInterval(interval);
     }
@@ -186,9 +303,9 @@ function App() {
             </form>
             
             <div className="demo-accounts">
-              <h3>Demo Account</h3>
+              <h3>Demo Accounts</h3>
               <div className="account admin">
-                <strong>admin</strong> / admin
+                <strong>admin</strong> / admin123 <em>(Full access)</em>
               </div>
             </div>
           </div>
@@ -204,7 +321,7 @@ function App() {
           <div className="header-left">
             <h1>Device Control Panel <span className="user-role role-admin">ADMIN</span></h1>
             <div className="user-info">
-              Welcome, <span>admin</span>
+              Welcome, <span>{currentUser?.username || 'User'}</span>
             </div>
           </div>
           <div className="header-right">
@@ -222,30 +339,31 @@ function App() {
         <div className="panel">
           <div className="panel-header">
             <h2>Connected Devices</h2>
-            <span className="device-count">{devices.length} devices</span>
+            <span className="device-count">{connectedDevices.length} devices</span>
           </div>
           <div className="panel-content">
             <div className="devices-list">
-              {devices.length === 0 ? (
+              {connectedDevices.length === 0 ? (
                 <div className="no-devices">No devices connected</div>
               ) : (
-                devices.map(device => (
+                connectedDevices.map(device => (
                   <div
-                    key={device.id}
-                    className={`device-item ${device.status} ${selectedDevice?.id === device.id ? 'selected' : ''}`}
+                    key={device.deviceId}
+                    className={`device-item ${device.status} ${selectedDevice?.deviceId === device.deviceId ? 'selected' : ''}`}
                     onClick={() => setSelectedDevice(device)}
                   >
                     <div className="device-header">
-                      <div className="device-id">Device {device.id}</div>
+                      <div className="device-id">{device.deviceId}</div>
                       <div className={`device-status status-${device.status}`}>
                         {device.status.toUpperCase()}
                       </div>
                     </div>
                     <div className="device-info">
-                      <strong>Session:</strong> {device.sessionID?.substring(0, 8)}... | 
-                      <strong> Commands:</strong> {device.commands?.length || 0}
+                      <strong>Name:</strong> {device.name || 'N/A'} | 
+                      <strong> Type:</strong> {device.type} | 
+                      <strong> Since:</strong> {new Date(device.registeredAt).toLocaleTimeString()}
                     </div>
-                    {device.ipAddress && device.ipAddress !== 'Not available' && (
+                    {device.ipAddress && (
                       <div className="device-ip">{device.ipAddress}</div>
                     )}
                   </div>
@@ -268,17 +386,18 @@ function App() {
                 <div className="selected-device-info">
                   <h4>Selected Device</h4>
                   <div>
-                    <strong>ID:</strong> {selectedDevice.id}<br/>
+                    <strong>ID:</strong> {selectedDevice.deviceId}<br/>
+                    <strong>Name:</strong> {selectedDevice.name || 'N/A'}<br/>
                     <strong>Status:</strong> {selectedDevice.status}<br/>
-                    <strong>IP:</strong> {selectedDevice.ipAddress}<br/>
-                    <strong>Commands:</strong> {selectedDevice.commands?.length || 0}
+                    <strong>IP:</strong> {selectedDevice.ipAddress || 'Not available'}<br/>
+                    <strong>Connected:</strong> {new Date(selectedDevice.registeredAt).toLocaleString()}
                   </div>
                 </div>
               )}
               
               <button 
                 className="start-btn" 
-                onClick={() => selectedDevice && sendCommand(selectedDevice.id, { type: "start", programId: 1 })}
+                onClick={sendStartCommand}
                 disabled={!selectedDevice}
               >
                 🚀 Send START Command
@@ -290,8 +409,15 @@ function App() {
               <button 
                 className="start-btn" 
                 style={{background: '#f39c12'}}
-                onClick={() => devices.forEach(device => sendCommand(device.id, { type: "start", programId: 1 }))}
-                disabled={devices.length === 0}
+                onClick={() => connectedDevices.forEach(device => {
+                  if (socketRef.current) {
+                    socketRef.current.emit('start-command', {
+                      deviceId: device.deviceId,
+                      timestamp: new Date().toISOString()
+                    });
+                  }
+                })}
+                disabled={connectedDevices.length === 0}
               >
                 ⚡ Start All Devices
               </button>
@@ -326,10 +452,10 @@ function App() {
           </div>
         </div>
 
-        {/* Terminal Panel */}
+        {/* Server Terminal Panel */}
         <div className="panel">
           <div className="panel-header">
-            <h2>Connection Terminal</h2>
+            <h2>Server Terminal</h2>
             <div style={{display: 'flex', gap: '8px'}}>
               <button className="terminal-btn" onClick={clearTerminal}>Clear</button>
               <button className="terminal-btn" onClick={() => setTerminalPaused(!terminalPaused)}>
@@ -347,6 +473,13 @@ function App() {
             </div>
           </div>
         </div>
+
+        {/* NEW: Device Terminal Panel */}
+        <Terminal 
+          selectedDevice={selectedDevice}
+          socket={socketRef.current}
+          onTerminalLog={(message, type) => addTerminalLog(message, type)}
+        />
       </div>
     </div>
   );

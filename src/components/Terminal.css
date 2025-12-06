@@ -1,0 +1,239 @@
+.terminal-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.terminal-header {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.terminal-header h3 {
+    color: #2c3e50;
+    font-size: 1.2em;
+    font-weight: 500;
+    margin: 0;
+}
+
+.terminal-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.terminal-btn {
+    padding: 6px 12px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background 0.3s ease;
+}
+
+.terminal-btn:hover {
+    background: #2980b9;
+}
+
+.terminal-content {
+    padding: 20px;
+}
+
+.device-info {
+    margin-bottom: 15px;
+}
+
+.device-selected {
+    background: #d5f4e6;
+    color: #27ae60;
+    padding: 10px;
+    border-radius: 8px;
+    border-left: 4px solid #27ae60;
+}
+
+.device-not-selected {
+    background: #ffebee;
+    color: #e74c3c;
+    padding: 10px;
+    border-radius: 8px;
+    border-left: 4px solid #e74c3c;
+}
+
+.warning-icon {
+    margin-right: 8px;
+    font-size: 1.2em;
+}
+
+.terminal-output {
+    background: #1a1a1a;
+    color: #00ff00;
+    border-radius: 10px;
+    padding: 15px;
+    height: 250px;
+    overflow-y: auto;
+    font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+    font-size: 0.85em;
+    line-height: 1.4;
+    margin-bottom: 15px;
+    scrollbar-width: thin;
+    scrollbar-color: #003566 #001d3d;
+}
+
+.terminal-output::-webkit-scrollbar {
+    width: 8px;
+}
+
+.terminal-output::-webkit-scrollbar-track {
+    background: #001d3d;
+}
+
+.terminal-output::-webkit-scrollbar-thumb {
+    background: #003566;
+    border-radius: 4px;
+}
+
+.terminal-output::-webkit-scrollbar-thumb:hover {
+    background: #004c99;
+}
+
+.terminal-log {
+    margin-bottom: 6px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    animation: fadeIn 0.3s ease;
+}
+
+.terminal-log-command {
+    color: #ff9966;
+}
+
+.terminal-log-response {
+    color: #66ccff;
+}
+
+.terminal-log-error {
+    color: #ff6666;
+}
+
+.terminal-log-system {
+    color: #4ec9b0;
+}
+
+.terminal-log-info {
+    color: #00ff00;
+}
+
+.log-time {
+    color: #66ccff;
+    opacity: 0.7;
+}
+
+.quick-commands {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.quick-command-btn {
+    padding: 4px 8px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-command-btn:hover {
+    background: #2980b9;
+    transform: translateY(-1px);
+}
+
+.terminal-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.terminal-prompt {
+    color: #3ddc84;
+    font-weight: bold;
+    white-space: nowrap;
+    font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+}
+
+.terminal-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+    font-size: 0.9em;
+    background: white;
+    color: #333;
+}
+
+.terminal-input:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.terminal-send-btn {
+    padding: 10px 20px;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.3s;
+}
+
+.terminal-send-btn:hover:not(:disabled) {
+    background: #219653;
+}
+
+.terminal-send-btn:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.terminal-hints {
+    color: #7f8c8d;
+    font-size: 0.85em;
+    text-align: center;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.terminal-hints kbd {
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 2px 5px;
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
