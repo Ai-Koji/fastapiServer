@@ -5,3 +5,4 @@ server/router/__pycache__
 *.spec
 
 build/
+node_modules/
